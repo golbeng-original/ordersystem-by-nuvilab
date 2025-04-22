@@ -1,5 +1,6 @@
 package com.ordersystemtask.june.domain.user.entity
 
+import java.time.LocalDateTime
 import java.util.Date
 
 /*
@@ -30,7 +31,7 @@ class UserEntity(
     val userId:Long,
     val email:String,
     val userTraitType:UserTraitType,
-    private val createdAt:Date = Date(),
+    private val createdAt:LocalDateTime = LocalDateTime.now(),
     private var _isDeleted:Boolean = false,
 ) {
     val isDeleted:Boolean
@@ -61,7 +62,7 @@ class AuthenticationUserEntity(
     var oauthProvider:OAuthProvider
 ) {
     fun updateRefreshToken(refreshToken:String) {
-        oauthProvider =oauthProvider.copy(
+        oauthProvider = oauthProvider.copy(
             refreshToken = refreshToken
         )
     }
