@@ -1,0 +1,71 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Kotlin
+*.class
+*.jar
+*.war
+*.ear
+*.kts~
+
+# Logs
+*.log
+logs/
+**/logs/
+*.pid
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+.env.*
+
+# Spring Boot Specific
+application.yml
+application-*.yml
+application.properties
+application-*.properties
+
+# Test Reports
+test-output/
+jacoco.exec
+coverage/
+*.lcov
+
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+
+# Docker
+docker-compose.override.yml
+*.dockerfile
+.docker/
+
+# VSCode
+.vscode/
+
+# Mac Specific
+.DS_Store
+
+# Linux Specific
+*~
+
+# Optional: Ignore generated metadata
+metadata/
+
+# Optional: Ignore dependency lock files if not needed
+# gradle.lockfile

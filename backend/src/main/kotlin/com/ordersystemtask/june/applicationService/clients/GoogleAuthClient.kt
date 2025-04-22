@@ -1,0 +1,147 @@
+package com.ordersystemtask.june.applicationService.clients
+
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.util.Base64
+
+data class AuthorizationResponse(
+    val accessToken: String,
+    val refreshToken: String,
+    val sub:String,
+    val email:String,
+    val expireSeconds:Long
+)
+
+data class GoogleOAuthTokenSuccessPayload(
+    @SerializedName("access_token")
+    val accessToken: String,
+    @SerializedName("refresh_token")
+    val refreshToken: String,
+    @SerializedName("expires_in")
+    val expiresIn: Int,
+    @SerializedName("id_token")
+    val idToken:String
+)
+
+data class GoogleOAuthTokenErrorPayload(
+    @SerializedName("error")
+    val error: String,
+    @SerializedName("error_description")
+    val errorDescription: String
+)
+
+data class GoogleOauthIdTokenPayload(
+    val iss:String,
+    val azp:String,
+    val aud:String,
+    val sub:String,
+    val email:String,
+    val name:String,
+    val picture:String
+)
+
+@Component
+class GoogleOAuthConfig(
+    @Value("\${oauthProvider.google.clientId}")
+    val clientId: String,
+    @Value("\${oauthProvider.google.clientSecret}")
+    val clientSecret: String,
+)
+
+class GoogleAuthClient(
+    private val config:GoogleOAuthConfig
+) {
+
+    companion object {
+        const val REDIRECT_URI = "http://localhost:8080/auth/callback"
+        const val SCOPE = "email profile openid"
+    }
+
+    private val _requestTokenUrl = "https://oauth2.googleapis.com/token"
+    private val _clientId = config.clientId
+    private val _clientSecretKey = config.clientSecret
+
+    private val _client = okhttp3.OkHttpClient()
+
+    /**
+     * Authorization Code를 accessToken, refreshToken으로 교환
+     */
+    fun requestAuthorization(authorizationCode:String) : AuthorizationResponse {
+
+        try {
+            val requestBody = okhttp3.FormBody.Builder().run {
+                add("grant_type", "authorization_code")
+                add("client_id", _clientId)
+                add("client_secret", _clientSecretKey)
+                add("code", authorizationCode)
+                add("redirect_uri", REDIRECT_URI)
+                build()
+            }
+
+            val request = okhttp3.Request.Builder().run {
+                url(_requestTokenUrl)
+                header("Content-Type", "application/x-www-form-urlencoded")
+                post(requestBody)
+                build()
+            }
+
+            val response = _client
+                .newCall(request)
+                .execute()
+
+            val body = response.body.string()
+
+            if( response.isSuccessful == false ) {
+                val errorPayload = Gson()
+                    .fromJson(
+                        body,
+                        GoogleOAuthTokenErrorPayload::class.java
+                    )
+
+                throw Exception(errorPayload.error)
+            }
+
+            val successPayload = Gson().fromJson(
+                body,
+                GoogleOAuthTokenSuccessPayload::class.java
+            )
+
+            val idTokenPayload = this.parsingIdToken(successPayload.idToken)
+
+            return AuthorizationResponse(
+                accessToken = successPayload.accessToken,
+                refreshToken = successPayload.refreshToken,
+                sub = idTokenPayload.sub,
+                email = idTokenPayload.email,
+                expireSeconds = successPayload.expiresIn.toLong()
+            )
+        }
+        catch (e:Exception) {
+            throw e
+        }
+    }
+
+    /**
+     * AccessToken 검증
+     */
+    fun vaildateAccessToken(accessToken:String) {
+        // TODO
+        // 1745226593 - 1745222993 = 3600
+    }
+
+    private fun parsingIdToken(idToken:String) : GoogleOauthIdTokenPayload {
+        val idTokenElements = idToken.split('.')
+
+        val payloadBytes = Base64.getDecoder().decode(idTokenElements[1])
+        val payloadContent = String(payloadBytes, Charsets.UTF_8)
+
+        val payload = Gson().fromJson(
+            payloadContent,
+            GoogleOauthIdTokenPayload::class.java
+        )
+
+        return payload
+    }
+}

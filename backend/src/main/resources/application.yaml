@@ -1,0 +1,27 @@
+server:
+  environment: dev
+  port: 80
+
+spring:
+  application:
+    name: ordersystem-june
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydb
+    username: user
+    password: userpass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+oauthProvider:
+    google:
+      clientId: XXXX
+      clientSecret: XXXX
