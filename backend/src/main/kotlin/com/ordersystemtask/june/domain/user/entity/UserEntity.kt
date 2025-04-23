@@ -86,7 +86,7 @@ data class OAuthProvider(
     val providerType:OAuthProviderType,
     val sub:String,
     val email:String,
-    val refreshToken:String,
+    val refreshToken:String = "",
 )
 
 
@@ -99,5 +99,16 @@ class AuthenticationUserEntity(
         oauthProvider = oauthProvider.copy(
             refreshToken = refreshToken
         )
+    }
+
+    companion object {
+        fun new(userId:Long, userTrait: UserTraitType, oauthProvider: OAuthProvider) : AuthenticationUserEntity {
+            return AuthenticationUserEntity(
+                userId = userId,
+                userTrait = userTrait,
+                oauthProvider = oauthProvider
+            )
+
+        }
     }
 }

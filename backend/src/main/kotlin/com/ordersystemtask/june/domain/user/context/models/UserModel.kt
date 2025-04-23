@@ -12,7 +12,7 @@ class UserModel(
     @Id
     @Column(name = "user_id", columnDefinition = "INT UNSIGNED")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val userId: Long = 0,
+    val userId: Long? = null,
 
     @Column(name = "email", unique = true, nullable = false)
     val email:String = "",
@@ -21,7 +21,7 @@ class UserModel(
     @Column(name = "trait", nullable = false)
     var trait:UserTraitType = UserTraitType.Normal,
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime,
 
     @Column(name = "is_deleted", nullable = false)
@@ -30,16 +30,16 @@ class UserModel(
     @Column(name = "deleted_at", nullable = true)
     var deletedAt: LocalDateTime? = null,
 
-    @OneToMany(fetch = FetchType.EAGER, targetEntity = ReceiveAddressModel::class, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "user_id", unique = true)
-    var receiveAddresses: List<ReceiveAddressModel> = listOf(),
+    @OneToMany(fetch = FetchType.EAGER, targetEntity = ReceiveAddressModel::class, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @JoinColumn(name = "user_id")
+    val receiveAddresses: MutableList<ReceiveAddressModel> = mutableListOf(),
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], optional = false)
     var oauthProvider: OAuthProviderModel? = null,
 )
 
 @Entity(name = "ReceiveAddress")
-@Table(name = "receive_address")
+@Table(name = "user_receive_address")
 class ReceiveAddressModel(
     @Id
     @Column(name = "receive_address_id", columnDefinition = "VARCHAR(50)")
@@ -56,7 +56,7 @@ class ReceiveAddressModel(
 )
 
 @Entity(name = "OAuthProvider")
-@Table(name = "oauth_provider")
+@Table(name = "user_oauth_provider")
 class OAuthProviderModel(
     @Id
     @Column(name = "user_id")

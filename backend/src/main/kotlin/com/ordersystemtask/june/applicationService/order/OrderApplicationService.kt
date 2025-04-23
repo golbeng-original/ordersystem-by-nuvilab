@@ -8,6 +8,7 @@ import com.ordersystemtask.june.domain.order.repository.OrderRepository
 import com.ordersystemtask.june.domain.store.entity.StoreStatus
 import com.ordersystemtask.june.domain.store.repository.StoreRepository
 import com.ordersystemtask.june.domain.user.repository.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
 data class OrderMenuItemUnit(
@@ -32,6 +33,7 @@ class OrderApplicationService(
     /**
      * 주문
      */
+    @Transactional
     fun order(param:OrderParam) : OrderEntity {
         val ( userId, storeId, receiveAddressId, orderMenuItemUnits ) = param
 
@@ -55,7 +57,7 @@ class OrderApplicationService(
         }
 
         val order = OrderEntity.new(
-            userId = userId,
+            orderUserId = userId,
             storeId = storeId,
             deliveryInfo = DeliveryInfo(
                 address = receiveAddress.address,
@@ -96,6 +98,7 @@ class OrderApplicationService(
     /**
      * 주문 취소
      */
+    @Transactional
     fun cancelOrder(orderId:String) : OrderEntity{
         val order = orderRepository.findById(orderId)
         require(order != null) {
@@ -110,6 +113,7 @@ class OrderApplicationService(
     /**
      * 결제 완료 하기
      */
+    @Transactional
     fun tryPay(orderId:String, method:PaymentMethod): OrderEntity {
         val order = orderRepository.findById(orderId)
         require(order != null) {
@@ -124,6 +128,7 @@ class OrderApplicationService(
     /**
      * 주문 받기
      */
+    @Transactional
     fun acceptOrder(orderId:String, ownerUserId:Long) : OrderEntity {
         val order = orderRepository.findById(orderId)
         require(order != null) {
@@ -147,6 +152,7 @@ class OrderApplicationService(
     /**
      * 배달 완료
      */
+    @Transactional
     fun completeDelivery(orderId:String) : OrderEntity {
         val order = orderRepository.findById(orderId)
         require(order != null) {

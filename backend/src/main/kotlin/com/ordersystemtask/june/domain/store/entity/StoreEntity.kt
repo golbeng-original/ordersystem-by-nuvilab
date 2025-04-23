@@ -1,8 +1,11 @@
 package com.ordersystemtask.june.domain.store.entity
 
+import org.springframework.cglib.core.Local
+import java.time.LocalDateTime
 import java.util.UUID
 
 enum class StoreStatus {
+    None,
     Open,
     Closed,
     Resting
@@ -33,14 +36,17 @@ class StoreEntity(
     val ownerUserId:Long,
     val name:String,
     val description:String,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    var _deletedAt:LocalDateTime? = null,
     private var _storeStatus:StoreStatus = StoreStatus.Closed,
     private val _menus:MutableList<MenuItemEntity> = mutableListOf(),
     private var _isDeleted:Boolean = false,
 ) {
-    val menus get() = _menus.sortedByDescending { it.orderIndex }
+    val menus get() = _menus.sortedBy { it.orderIndex }
     val storeStatus get() = _storeStatus
 
     val isDeleted get() = _isDeleted
+    val deletedAt get() = this._deletedAt
 
     fun addMenuItem(menuItem:MenuItemEntity) {
         _menus.add(
@@ -84,6 +90,7 @@ class StoreEntity(
 
     fun delete() {
         _isDeleted = true
+        _deletedAt = LocalDateTime.now()
     }
 
     companion object {

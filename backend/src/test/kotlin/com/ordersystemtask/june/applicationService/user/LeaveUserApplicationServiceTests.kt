@@ -7,18 +7,22 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LeaveUserApplicationServiceTests {
-
-    private lateinit var userRepository: UserRepository
+class LeaveUserApplicationServiceTests @Autowired constructor(
+    private val userRepository: UserRepository,
+    private val storeRepository: StoreRepository
+) {
 
     private lateinit var sut: LeaveUserApplicationService
 
     @BeforeEach
     fun setup() {
-        userRepository = UserRepository()
-        val storeRepository = StoreRepository()
 
         sut = LeaveUserApplicationService(
             userRepository = userRepository,

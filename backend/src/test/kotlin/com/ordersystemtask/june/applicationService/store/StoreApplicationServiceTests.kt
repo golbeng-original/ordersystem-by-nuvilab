@@ -6,9 +6,17 @@ import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import org.junit.jupiter.api.*
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class StoreApplicationServiceTests {
+class StoreApplicationServiceTests @Autowired constructor(
+    private val userRepository: UserRepository,
+    private val storeRepository: StoreRepository
+) {
 
 
     private lateinit var sut:StoreApplicationService
@@ -16,8 +24,6 @@ class StoreApplicationServiceTests {
     @BeforeEach
     fun setup() {
 
-        val userRepository = UserRepository()
-        val storeRepository = StoreRepository()
 
         sut = StoreApplicationService(
             storeRepository = storeRepository,

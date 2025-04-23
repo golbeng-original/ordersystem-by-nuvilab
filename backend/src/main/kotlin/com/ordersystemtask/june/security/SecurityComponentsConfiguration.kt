@@ -15,6 +15,11 @@ class SecurityComponentsConfiguration {
     }
 
     @Bean
+    fun jwtGenerator(): JWTGenerator {
+        return JWTGenerator("12345678901234567890123456789012")
+    }
+
+    @Bean
     fun jwtAuthenticationProvider(
         jwtUserDetailsService: JwtUserDetailsService,
         jwtGenerator: JWTGenerator

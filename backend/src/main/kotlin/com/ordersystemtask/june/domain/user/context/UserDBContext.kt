@@ -8,4 +8,6 @@ import org.springframework.stereotype.Component
 interface UserDBContext : JpaRepository<UserModel, Long> {
 
     fun findByUserId(userId: Long): UserModel?
+
+    fun findByEmail(email: String): UserModel?
 }

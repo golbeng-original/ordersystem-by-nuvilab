@@ -97,10 +97,10 @@ class OrderEntity(
     // TODO(June) : 주문 수정 필요
 
     companion object {
-        fun new(userId:Long, storeId:Long, deliveryInfo:DeliveryInfo): OrderEntity {
+        fun new(orderUserId:Long, storeId:Long, deliveryInfo:DeliveryInfo): OrderEntity {
             return OrderEntity(
                 orderId = UUID.randomUUID().toString(),
-                orderUserId = userId,
+                orderUserId = orderUserId,
                 storeId = storeId,
                 _deliveryInfo = deliveryInfo
             )

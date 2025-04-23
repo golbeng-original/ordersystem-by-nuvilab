@@ -46,11 +46,6 @@ class SecurityConfiguration(
     }
 
     @Bean
-    fun jwtGenerator(): JWTGenerator {
-        return JWTGenerator("12345678901234567890123456789012")
-    }
-
-    @Bean
     fun filterChain(
         httpSecurity: HttpSecurity
     ) : SecurityFilterChain {

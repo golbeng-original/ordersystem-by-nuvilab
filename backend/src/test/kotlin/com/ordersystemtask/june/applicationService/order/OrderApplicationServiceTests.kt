@@ -12,39 +12,46 @@ import com.ordersystemtask.june.domain.user.entity.ReceiveAddressEntity
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
+import jakarta.transaction.TransactionManager
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.DefaultTransactionDefinition
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class OrderApplicationServiceTests {
-
-    private lateinit var orderRepository: OrderRepository
-
-    private lateinit var sut:OrderApplicationService
+class OrderApplicationServiceTests @Autowired constructor(
+    private val userRepository: UserRepository,
+    private val storeRepository: StoreRepository,
+    private val orderRepository: OrderRepository,
+    private val transactionManager: PlatformTransactionManager
+) {
+    private val sut = OrderApplicationService(
+        orderRepository = orderRepository,
+        userRepository = userRepository,
+        storeRepository = storeRepository
+    )
 
     private lateinit var normalUser: UserEntity
     private lateinit var sellerUser:UserEntity
 
     private lateinit var store: StoreEntity
 
-    @BeforeEach
-    fun setup() {
-
-        orderRepository = OrderRepository()
-        val storeRepository = StoreRepository()
-        val userRepository = UserRepository()
-
-        sut = OrderApplicationService(
-            orderRepository = orderRepository,
-            userRepository = userRepository,
-            storeRepository = storeRepository
-        )
+    @BeforeAll
+    fun setupAll() {
 
         // 일반 유저 생성
-        normalUser = userRepository.saveUser(UserEntity.new("email1@gamil.com"))
+        normalUser = UserEntity.new("email1@gamil.com")
         normalUser.addReceiveAddress(
             ReceiveAddressEntity.new(
                 address = "서울시 강남구",
@@ -52,20 +59,19 @@ class OrderApplicationServiceTests {
                 phoneNumber = "010-1234-5678"
             )
         )
-        userRepository.saveUser(normalUser)
+        normalUser = userRepository.saveUser(normalUser)
 
         // 가게 유저 생성
-        sellerUser = userRepository.saveUser(UserEntity.new("email2@gamile.com"))
+        sellerUser = UserEntity.new("email2@gamile.com")
         sellerUser.changeUserTrait(UserTraitType.Seller)
+
         sellerUser = userRepository.saveUser(sellerUser)
 
         // 가게 등록
-        store = storeRepository.saveStore(
-            StoreEntity.new(
-                ownerUserId = sellerUser.userId,
-                name = "가게1",
-                description = "가게 설명",
-            )
+        store = StoreEntity.new(
+            ownerUserId = sellerUser.userId,
+            name = "가게1",
+            description = "가게 설명",
         )
 
         val menuItems = listOf(
@@ -89,6 +95,8 @@ class OrderApplicationServiceTests {
         store.changeStoreStatus(StoreStatus.Open)
 
         store = storeRepository.saveStore(store)
+
+
     }
 
     private fun prepareOrder() : OrderEntity {
