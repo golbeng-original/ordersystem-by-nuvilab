@@ -13,6 +13,12 @@ class StoreRepository {
         return _stores[storeId]
     }
 
+    fun findStoreByOwnerUserId(ownerUserId: Long): List<StoreEntity> {
+        return _stores.values.filter {
+            it.ownerUserId == ownerUserId
+        }
+    }
+
     fun saveStore(storeEntity: StoreEntity): StoreEntity {
 
         if( storeEntity.storeId == 0L) {

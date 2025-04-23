@@ -1,4 +1,4 @@
-package com.ordersystemtask.june.applicationService.clients
+package com.ordersystemtask.june.clients
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -51,7 +51,7 @@ class GoogleOAuthConfig(
 )
 
 class GoogleAuthClient(
-    private val config:GoogleOAuthConfig
+    private val config: GoogleOAuthConfig
 ) {
 
     companion object {

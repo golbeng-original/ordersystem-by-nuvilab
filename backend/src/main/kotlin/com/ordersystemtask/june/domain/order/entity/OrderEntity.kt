@@ -1,6 +1,7 @@
 package com.ordersystemtask.june.domain.order.entity
 
 import java.time.LocalDateTime
+import java.util.UUID
 
 enum class OrderStatus {
     Pending, // 주문 수락 대기중
@@ -10,23 +11,42 @@ enum class OrderStatus {
 }
 
 enum class PaymentMethod {
+    Empty,
     Card,
     Cash
 }
 
 class OrderEntity(
-    val orderId: Long,
+    val orderId: String,
     val storeId: Long,
+    val orderUserId:Long,
     var _orderStatus:OrderStatus = OrderStatus.Pending,
     val orderedAt: LocalDateTime = LocalDateTime.now(),
-    val _orderedItems: MutableList<OrderedItem> = mutableListOf(),
-    var _paymentInfo: PaymentInfo,
-    var _deliveryInfo : DeliveryInfo
+    val _orderedItemInfos: MutableList<OrderedItemInfo> = mutableListOf(),
+    var _paymentInfo: PaymentInfo = PaymentInfo(),
+    var _deliveryInfo : DeliveryInfo,
+    private var _completedAt: LocalDateTime? = null,
 ) {
     val orderStatus get() = _orderStatus
-    val orderedItem get() = _orderedItems.toList()
+    val orderedItems get() = _orderedItemInfos.toList()
     val paymentInfo get() = _paymentInfo
     val deliveryInfo get() = _deliveryInfo
+
+    val totalPrice get() = _orderedItemInfos.sumOf { it.totalPrice }
+
+    val completedAt get() = _completedAt
+
+    fun completePay(method: PaymentMethod) {
+        require(_orderStatus == OrderStatus.Pending && _paymentInfo.paid == false) {
+            "이미 결제 완료하였음"
+        }
+
+        _paymentInfo = _paymentInfo.copy(
+            paymentMethod = method,
+            paid = true,
+            paidAt = LocalDateTime.now()
+        )
+    }
 
     fun accept() {
         require(_orderStatus == OrderStatus.Pending) {
@@ -39,6 +59,7 @@ class OrderEntity(
 
         _orderStatus = OrderStatus.Accepted
     }
+
     fun cancel() {
         require(_orderStatus == OrderStatus.Pending || _orderStatus == OrderStatus.Accepted) {
             "주문 취소할 수 없는 상태"
@@ -47,22 +68,20 @@ class OrderEntity(
         _orderStatus = OrderStatus.Canceled
     }
     fun complete() {
-        require(_orderStatus == OrderStatus.Canceled) {
+        require(_orderStatus != OrderStatus.Canceled) {
             "취소 된 것을 완료 할 수 없음"
         }
 
+        require(_orderStatus == OrderStatus.Accepted) {
+            "주문 수락 후에 배달 완료 처리 가능"
+        }
+
         _orderStatus = OrderStatus.Completed
+        _completedAt = LocalDateTime.now()
     }
 
-    fun addOrderItem(newOrderItem: OrderedItem) {
-        _orderedItems.add(newOrderItem)
-    }
-
-    fun completePay() {
-        _paymentInfo = _paymentInfo.copy(
-            paid = true,
-            paidAt = LocalDateTime.now()
-        )
+    fun addOrderItem(newOrderItem: OrderedItemInfo) {
+        _orderedItemInfos.add(newOrderItem)
     }
 
     fun changeDeliveryInfo(deliveryInfo: DeliveryInfo) {
@@ -76,10 +95,21 @@ class OrderEntity(
     // TODO(June) : 주문 제거 필요
 
     // TODO(June) : 주문 수정 필요
+
+    companion object {
+        fun new(userId:Long, storeId:Long, deliveryInfo:DeliveryInfo): OrderEntity {
+            return OrderEntity(
+                orderId = UUID.randomUUID().toString(),
+                orderUserId = userId,
+                storeId = storeId,
+                _deliveryInfo = deliveryInfo
+            )
+        }
+    }
 }
 
-class OrderedItem(
-    val menuItemId:Long,
+data class OrderedItemInfo(
+    val menuItemId:String,
     val menuName:String,
     val unitPrice: Long,
     val quantity:Int
@@ -88,7 +118,7 @@ class OrderedItem(
 }
 
 data class PaymentInfo(
-    val paymentMethod:PaymentMethod,
+    val paymentMethod:PaymentMethod = PaymentMethod.Empty,
     val paid: Boolean = false,
     val paidAt: LocalDateTime? = null
 )

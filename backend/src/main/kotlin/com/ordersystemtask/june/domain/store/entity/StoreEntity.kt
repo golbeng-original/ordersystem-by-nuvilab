@@ -1,28 +1,30 @@
 package com.ordersystemtask.june.domain.store.entity
 
+import java.util.UUID
+
 enum class StoreStatus {
     Open,
     Closed,
     Resting
 }
 
-class MenuItem(
-    val menuItemId:Long,
+data class MenuItemEntity(
+    val menuItemId:String,
     val name:String,
     val description:String,
-    private var _price:Long,
-    private var _orderIndex:Int
+    val price:Long,
+    val orderIndex:Int = 0
 ) {
-    val price get() = _price
 
-    val orderIndex get() = _orderIndex
-
-    fun updatePrice(price:Long) {
-        require(_price >= 0) {
-            "Price must be greater than 0"
+    companion object {
+        fun new(name:String, description:String, price:Long) : MenuItemEntity {
+            return MenuItemEntity(
+                menuItemId = UUID.randomUUID().toString(),
+                name = name,
+                description = description,
+                price = price
+            )
         }
-
-        this._price = price
     }
 }
 
@@ -32,20 +34,41 @@ class StoreEntity(
     val name:String,
     val description:String,
     private var _storeStatus:StoreStatus = StoreStatus.Closed,
-    private val _menus:MutableList<MenuItem> = mutableListOf()
+    private val _menus:MutableList<MenuItemEntity> = mutableListOf(),
+    private var _isDeleted:Boolean = false,
 ) {
     val menus get() = _menus.sortedByDescending { it.orderIndex }
     val storeStatus get() = _storeStatus
 
-    fun addMenuItem(menuItem:MenuItem) {
-        _menus.add(menuItem)
+    val isDeleted get() = _isDeleted
+
+    fun addMenuItem(menuItem:MenuItemEntity) {
+        _menus.add(
+            menuItem.copy(orderIndex = _menus.size + 1)
+        )
     }
 
-    fun removeMenuItem(menuItemId:Long) {
+    fun addMenuItems(menuItems:List<MenuItemEntity>) {
+        _menus.addAll(menuItems)
+
+        _menus.forEachIndexed { index, menuItem ->
+            _menus[index] = menuItem.copy(orderIndex = index + 1)
+        }
+    }
+
+    fun removeMenuItem(menuItemId:String) {
         _menus.removeIf { it.menuItemId == menuItemId }
+
+        _menus.forEachIndexed { index, menuItem ->
+            _menus[index] = menuItem.copy(orderIndex = index + 1)
+        }
     }
 
-    fun updateMenuItem(menuItem: MenuItem) {
+    fun removeAllMenuItem() {
+        _menus.clear()
+    }
+
+    fun updateMenuItem(menuItem: MenuItemEntity) {
         val index = _menus.indexOfFirst { it.menuItemId == menuItem.menuItemId }
 
         require(index != -1) {
@@ -55,8 +78,12 @@ class StoreEntity(
         _menus[index] = menuItem
     }
 
-    fun updateStoreStatus(storeStatus:StoreStatus) {
+    fun changeStoreStatus(storeStatus:StoreStatus) {
         _storeStatus = storeStatus
+    }
+
+    fun delete() {
+        _isDeleted = true
     }
 
     companion object {

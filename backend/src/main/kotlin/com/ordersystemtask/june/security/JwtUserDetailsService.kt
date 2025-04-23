@@ -13,7 +13,7 @@ class JwtUserDetails(
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mapOf(
-            "ROLE_USER" to SimpleGrantedAuthority(user.userTraitType.traitName),
+            "ROLE_USER" to SimpleGrantedAuthority(user.userTrait.traitName),
         ).values.toMutableList()
     }
 

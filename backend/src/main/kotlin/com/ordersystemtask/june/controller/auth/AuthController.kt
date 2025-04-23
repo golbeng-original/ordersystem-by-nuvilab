@@ -1,6 +1,6 @@
 package com.ordersystemtask.june.controller.auth
 
-import com.ordersystemtask.june.controller.auth.specification.AuthSpecification
+import com.ordersystemtask.june.applicationService.auth.AuthApplicationService
 import com.ordersystemtask.june.security.JWTGenerator
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/auth")
 class AuthController(
     private val jwtGenerator: JWTGenerator,
-    private val authSpecification: AuthSpecification
+    private val authApplicationService: AuthApplicationService
 ) {
 
     @GetMapping("/login")
@@ -20,7 +20,7 @@ class AuthController(
     @PostMapping("/authorize")
     fun authorize(@RequestBody request:AuthorizeRequest): ResponseEntity<AuthorizeResponse> {
 
-        val result = authSpecification.processAuthByOAuthAuthenticationCode(
+        val result = authApplicationService.processAuthByOAuthAuthenticationCode(
             code = request.authorizeCode
         )
 

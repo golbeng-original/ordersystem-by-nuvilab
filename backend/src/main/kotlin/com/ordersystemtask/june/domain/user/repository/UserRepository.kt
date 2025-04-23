@@ -15,7 +15,7 @@ class UserRepository {
     fun findAuthenticationUserById(userId: Long): AuthenticationUserEntity? {
         return AuthenticationUserEntity(
             userId = userId,
-            userTraitType = UserTraitType.Normal,
+            userTrait = UserTraitType.Normal,
             oauthProvider = OAuthProvider(
                 providerType = OAuthProviderType.Google,
                 sub = "sub",
@@ -49,7 +49,7 @@ class UserRepository {
             val newUserEntity = UserEntity(
                 userId = ++_idGenerator,
                 email = userEntity.email,
-                userTraitType = userEntity.userTraitType,
+                _userTrait = userEntity.userTrait,
                 _isDeleted = false
             )
 

@@ -1,21 +1,21 @@
-package com.ordersystemtask.june.controller.auth.specification
+package com.ordersystemtask.june.applicationService.auth
 
-import com.ordersystemtask.june.applicationService.clients.GoogleAuthClient
+import com.ordersystemtask.june.clients.GoogleAuthClient
 import com.ordersystemtask.june.domain.user.entity.AuthenticationUserEntity
 import com.ordersystemtask.june.domain.user.entity.OAuthProvider
 import com.ordersystemtask.june.domain.user.entity.OAuthProviderType
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import com.ordersystemtask.june.security.JWTGenerator
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
 data class ProcessAuthResult(
     val user: UserEntity,
     val jwtToken:String
 )
 
-@Component
-class AuthSpecification(
+@Service
+class AuthApplicationService(
     private val userRepository: UserRepository,
     private val jwtGenerator: JWTGenerator,
     private val googleAuthClient: GoogleAuthClient
@@ -51,7 +51,7 @@ class AuthSpecification(
 
         val authenticationUser = AuthenticationUserEntity(
             userId = user.userId,
-            userTraitType = user.userTraitType,
+            userTrait = user.userTrait,
             oauthProvider = OAuthProvider(
                 providerType = OAuthProviderType.Google,
                 sub = sub,
@@ -60,6 +60,7 @@ class AuthSpecification(
             )
         )
         userRepository.saveAuthenticationUser(authenticationUser)
+
 
         return user
     }

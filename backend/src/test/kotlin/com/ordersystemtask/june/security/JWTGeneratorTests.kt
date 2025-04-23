@@ -3,8 +3,10 @@ package com.ordersystemtask.june.security
 import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.util.Base64
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JWTGeneratorTests {
     val sut = JWTGenerator("12345678901234567890123456789012")
 
