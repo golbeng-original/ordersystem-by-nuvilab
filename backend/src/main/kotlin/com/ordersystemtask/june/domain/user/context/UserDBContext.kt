@@ -1,15 +1,11 @@
 package com.ordersystemtask.june.domain.user.context
 
 import com.ordersystemtask.june.domain.user.context.models.UserModel
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Component
 
-class UserDBContext {
+@Component
+interface UserDBContext : JpaRepository<UserModel, Long> {
 
-    fun findUserModelById(userId: Int): UserModel? {
-        // TODO("Not yet implemented")
-        return null
-    }
-
-    fun saveUserModel(userModel:UserModel) {
-
-    }
+    fun findByUserId(userId: Long): UserModel?
 }

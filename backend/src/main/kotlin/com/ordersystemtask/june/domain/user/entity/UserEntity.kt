@@ -1,11 +1,12 @@
 package com.ordersystemtask.june.domain.user.entity
 
+import org.springframework.cglib.core.Local
 import java.time.LocalDateTime
 import java.util.UUID
 
 enum class UserTraitType(val traitName:String) {
     Normal("normal"),
-    Seller("seller"),
+    Seller("seller")
 }
 
 class ReceiveAddressEntity (
@@ -35,12 +36,13 @@ class UserEntity(
     val email:String,
     var _userTrait:UserTraitType = UserTraitType.Normal,
     val createdAt:LocalDateTime = LocalDateTime.now(),
+    var _deletedAt:LocalDateTime? = null,
     private val _receiveAddresses:MutableList<ReceiveAddressEntity> = mutableListOf(),
     private var _isDeleted:Boolean = false,
 ) {
     val userTrait get() = this._userTrait
     val isDeleted get() = this._isDeleted
-
+    val deletedAt get() = this._deletedAt
     val receiveAddresses get() = _receiveAddresses.toList()
 
     fun changeUserTrait(userTrait:UserTraitType) {
@@ -61,6 +63,7 @@ class UserEntity(
         }
 
         _isDeleted = true
+        _deletedAt = LocalDateTime.now()
     }
 
     companion object {
@@ -74,8 +77,9 @@ class UserEntity(
 }
 
 
-enum class OAuthProviderType(val providerName:String) {
-    Google("google"),
+enum class OAuthProviderType {
+    None,
+    Google
 }
 
 data class OAuthProvider(

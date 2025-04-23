@@ -11,7 +11,7 @@ enum class OrderStatus {
 }
 
 enum class PaymentMethod {
-    Empty,
+    None,
     Card,
     Cash
 }
@@ -118,7 +118,7 @@ data class OrderedItemInfo(
 }
 
 data class PaymentInfo(
-    val paymentMethod:PaymentMethod = PaymentMethod.Empty,
+    val paymentMethod:PaymentMethod = PaymentMethod.None,
     val paid: Boolean = false,
     val paidAt: LocalDateTime? = null
 )
