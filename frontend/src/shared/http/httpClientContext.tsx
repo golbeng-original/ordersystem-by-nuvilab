@@ -35,7 +35,6 @@ export const useHttpClient = () => {
     }
 
     httpClient.registerNewTokenResolver((newToken: string) => {
-        console.log('enter registerNewTokenResolver')
         updateToken(newToken);
     });
 
