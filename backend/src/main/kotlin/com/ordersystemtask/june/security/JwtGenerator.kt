@@ -1,5 +1,7 @@
 package com.ordersystemtask.june.security
 
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
@@ -11,6 +13,10 @@ data class JwtClaims(
     val accessToken:String,
     val isExpired:Boolean
 )
+
+class JwtTokenExpiredException(
+    val claims: Claims
+) : RuntimeException("JWT Token is expired")
 
 /**
  * 서버 자체적인 JWT Token 발급
@@ -27,9 +33,12 @@ class JWTGenerator(
         val now = Date()
         val jwtToken = Jwts.builder().run {
             setSubject(userId.toString())
+
             claim("accessToken", accessToken)
+
             setIssuedAt(now)
             setExpiration(Date(now.time + (expireSeconds * 1000)))
+
             signWith(secretKey)
             compact()
         }
@@ -52,6 +61,10 @@ class JWTGenerator(
                 accessToken = claims["accessToken"].toString(),
                 isExpired = expiration.before(Date())
             )
+        }
+        catch(e: ExpiredJwtException) {
+            logger.warn(e.message)
+            throw JwtTokenExpiredException(e.claims)
         }
         catch (e: Exception) {
             logger.error(e.message)

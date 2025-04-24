@@ -20,56 +20,28 @@ import java.net.URI
 class StoreController(
     private val storeApplicationService: StoreApplicationService
 ) {
-    private val LOGGER = LoggerFactory.getLogger(this::javaClass.name)
-
     @GetMapping("")
     fun getStores(
         @AuthenticationPrincipal userDetails: JwtUserDetails,
-    ) : ResponseEntity<GetStoresResponse> {
-        try {
-            val stores = storeApplicationService.getStores()
+    ) : GetStoresResponse {
+        val stores = storeApplicationService.getStores()
 
-            val storeViewModels = stores.map {
-                converterStoreToViewModel(it)
-            }
-
-            return ResponseEntity
-                .ok()
-                .body(
-                    GetStoresResponse(storeViewModels)
-                )
+        val storeViewModels = stores.map {
+            converterStoreToViewModel(it)
         }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
 
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        return GetStoresResponse(storeViewModels)
     }
 
     @GetMapping("/{storeId}")
     fun getStore(
         @PathVariable storeId:Long
-    ) : ResponseEntity<GetStoreResponse> {
-        try {
-            val store = storeApplicationService.getStore(storeId)
+    ) : GetStoreResponse {
+        val store = storeApplicationService.getStore(storeId)
 
-            val storeViewModel = converterStoreToViewModel(store)
-
-            return ResponseEntity
-                .ok()
-                .body(
-                    GetStoreResponse(storeViewModel)
-                )
-        }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
-
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        return GetStoreResponse(
+            converterStoreToViewModel(store)
+        )
     }
 
     @PostMapping("")
@@ -78,28 +50,22 @@ class StoreController(
         @AuthenticationPrincipal userDetails: JwtUserDetails,
         @RequestBody request:CreateStoreRequest
     ) : ResponseEntity<CreateStoreResponse> {
-        try {
-            val output = storeApplicationService.createStore(
-                StoreCreationParam(
-                    ownerUserId = userDetails.user.userId,
-                    storeName = request.name,
-                    storeDescription = request.desc
-                )
+
+        val output = storeApplicationService.createStore(
+            StoreCreationParam(
+                ownerUserId = userDetails.userId,
+                storeName = request.name,
+                storeDescription = request.desc
             )
+        )
 
-            val storeViewModel = converterStoreToViewModel(output.storeEntity)
+        val storeViewModel = converterStoreToViewModel(output.storeEntity)
 
-            return ResponseEntity
-                .created(URI.create("/stores/${1}"))
-                .body(CreateStoreResponse(storeViewModel))
-        }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
-
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        return ResponseEntity
+            .created(URI.create("/stores/${1}"))
+            .body(
+                CreateStoreResponse(storeViewModel)
+            )
     }
 
     @PatchMapping("/{storeId}")
@@ -108,60 +74,36 @@ class StoreController(
         @AuthenticationPrincipal userDetails: JwtUserDetails,
         @PathVariable storeId:Long,
         @RequestBody request:UpdateStoreStatusRequest
-    ) : ResponseEntity<UpdateStoreStatusResponse> {
-        try {
-
-            val storeStatus = when(request.status) {
-                StoreStatusViewModelType.Open -> StoreStatus.Open
-                StoreStatusViewModelType.Closed -> StoreStatus.Closed
-                StoreStatusViewModelType.Resting -> StoreStatus.Resting
-            }
-
-            val store = storeApplicationService.updateStoreStatus(
-                storeId = storeId,
-                storeStatus = storeStatus
-            )
-
-            val storeViewModel = converterStoreToViewModel(store)
-            return ResponseEntity
-                .ok()
-                .body(
-                    UpdateStoreStatusResponse(storeViewModel)
-                )
+    ) : UpdateStoreStatusResponse {
+        val storeStatus = when(request.status) {
+            StoreStatusViewModelType.Open -> StoreStatus.Open
+            StoreStatusViewModelType.Closed -> StoreStatus.Closed
+            StoreStatusViewModelType.Resting -> StoreStatus.Resting
         }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
 
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        val store = storeApplicationService.updateStoreStatus(
+            storeId = storeId,
+            storeStatus = storeStatus
+        )
+
+        return UpdateStoreStatusResponse(
+            converterStoreToViewModel(store)
+        )
     }
 
     @GetMapping("/{storeId}/menus")
     fun getMenus(
         @PathVariable storeId:Long
-    ) : ResponseEntity<GetMenuItemsResponse> {
-        try {
-            val store = storeApplicationService.getStore(storeId)
+    ) : GetMenuItemsResponse {
+        val store = storeApplicationService.getStore(storeId)
 
-            val menuItemViewModels = store.menus.map {
-                convertMenuToViewModel(it)
-            }
-
-            return ResponseEntity
-                .ok()
-                .body(
-                    GetMenuItemsResponse(menuItemViewModels)
-                )
+        val menuItemViewModels = store.menus.map {
+            convertMenuToViewModel(it)
         }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
 
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        return GetMenuItemsResponse(
+            menuItemViewModels
+        )
     }
 
     @PostMapping("/{storeId}/menus")
@@ -170,32 +112,23 @@ class StoreController(
         @PathVariable storeId:Long,
         @RequestBody request:AddMenuRequest
     ) : ResponseEntity<AddMenuResponse> {
-        try {
-            val newMenuItemUnit = StoreUpdateMenuItemUnit(
-                name = request.name,
-                description = request.desc,
-                price = request.price
-            )
+        val newMenuItemUnit = StoreUpdateMenuItemUnit(
+            name = request.name,
+            description = request.desc,
+            price = request.price
+        )
 
-            val output = storeApplicationService.addMenuItems(
-                AddMenuItemsParam(storeId, newMenuItemUnit)
-            )
+        val output = storeApplicationService.addMenuItems(
+            AddMenuItemsParam(storeId, newMenuItemUnit)
+        )
 
-            return ResponseEntity
-                .created(URI.create("/stores/${output.store.storeId}"))
-                .body(
-                    AddMenuResponse(
-                        convertMenuToViewModel(output.newMenuItem)
-                    )
+        return ResponseEntity
+            .created(URI.create("/stores/${output.store.storeId}"))
+            .body(
+                AddMenuResponse(
+                    convertMenuToViewModel(output.newMenuItem)
                 )
-        }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
-
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+            )
     }
 
     private fun converterStoreToViewModel(store: StoreEntity) : StoreViewModel {

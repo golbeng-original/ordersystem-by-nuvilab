@@ -12,21 +12,14 @@ import com.ordersystemtask.june.domain.user.entity.ReceiveAddressEntity
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
-import jakarta.transaction.TransactionManager
-import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.support.DefaultTransactionDefinition
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -152,7 +145,7 @@ class OrderApplicationServiceTests @Autowired constructor(
         // then
         Assertions.assertEquals(
             order.orderStatus,
-            OrderStatus.Canceled
+            OrderStatus.Cancelled
         )
     }
 

@@ -14,7 +14,7 @@ const AuthenticatedPage = () => {
 
         const requestTest = async () => {
             await httpClient.get({
-                path: '/auth/test'
+                path: '/user'
             });
         }
 

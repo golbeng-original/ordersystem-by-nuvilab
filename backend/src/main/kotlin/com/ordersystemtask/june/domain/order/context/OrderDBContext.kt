@@ -8,5 +8,7 @@ import org.springframework.stereotype.Component
 interface OrderDBContext : JpaRepository<OrderModel, String> {
     fun findByOrderId(orderId: String): OrderModel?
 
+    fun findByStoreId(storeId: Long): List<OrderModel>
+
     fun findFirstByOrderUserIdOrderByOrderedAtDesc(orderUserId: Long): OrderModel?
 }

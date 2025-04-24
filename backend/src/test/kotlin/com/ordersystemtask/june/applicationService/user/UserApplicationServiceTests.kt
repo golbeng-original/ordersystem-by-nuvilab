@@ -1,13 +1,10 @@
 package com.ordersystemtask.june.applicationService.user
 
-import com.ordersystemtask.june.domain.store.repository.StoreRepository
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -38,7 +35,7 @@ class UserApplicationServiceTests @Autowired constructor(
     @Test
     fun `유저를 판매자로 승격`() {
 
-        val user = sut.changeToSeller(1L)
+        val user = sut.changeUserTrait(1L)
 
         Assertions.assertEquals(user.userTrait, UserTraitType.Seller)
     }

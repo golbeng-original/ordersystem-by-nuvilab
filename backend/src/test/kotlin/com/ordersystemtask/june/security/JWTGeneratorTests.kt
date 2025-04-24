@@ -13,7 +13,11 @@ class JWTGeneratorTests {
     @Test
     fun `JWT 토큰 생성`() {
 
-        val jwtToken = sut.generate(1, "test-access-token", 60)
+        val jwtToken = sut.generate(
+            1,
+            "test-access-token",
+            60
+        )
 
         val elements = jwtToken.split(".")
         Assertions.assertEquals(elements.size, 3)
@@ -28,7 +32,11 @@ class JWTGeneratorTests {
 
     @Test
     fun `JWT 토큰 검즘`() {
-        val jwtToken = sut.generate(1, "test-access-token", 60)
+        val jwtToken = sut.generate(
+            1,
+            "test-access-token",
+            60
+        )
 
         val claims = sut.deserialize(jwtToken)
 

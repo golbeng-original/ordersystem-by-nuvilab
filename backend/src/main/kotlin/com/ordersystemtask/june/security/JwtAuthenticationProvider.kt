@@ -29,18 +29,25 @@ class JwtAuthenticationProvider(
     override fun authenticate(authentication: Authentication?): Authentication {
         val token = (authentication as JwtAuthenticationToken).token
 
-        val claims = jwtGenerator.deserialize(token)
+        var claims: JwtClaims? = null
+        try {
+            claims = jwtGenerator.deserialize(token)
+        }
+        // Filter에서 accessToken 재발급 할 수 있도록 예외 전파
+        catch (e: JwtTokenExpiredException) {
+            throw e
+            // TODO : AccessToken이 만료 되었나? 체크 필요
+            // TODO : RefershToken으로 AccessToken 재발급 필요
+        }
+
+
         if( claims == null ) {
             throw BadCredentialsException("Invalid JWT token")
         }
 
-        // TODO : AccessToken이 만료 되었나? 체크 필요
-        // TODO : RefershToken으로 AccessToken 재발급 필요
-        //if( claims.isExpired == true ) {
-        //}
-
         // userDetailsService에서 실제 검증 유저 정보 찾기
         val userDetails = jwtUserDetailsService.loadUserByUsername(claims.userId.toString())
+
         return UsernamePasswordAuthenticationToken(
             userDetails,
             null,
@@ -55,5 +62,4 @@ class JwtAuthenticationProvider(
 
         return JwtAuthenticationToken::class.java.isAssignableFrom(authentication)
     }
-
 }

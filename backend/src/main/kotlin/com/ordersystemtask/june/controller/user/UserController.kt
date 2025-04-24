@@ -1,12 +1,12 @@
 package com.ordersystemtask.june.controller.user
 
+import com.ordersystemtask.june.applicationService.user.AddReceiveAddressData
 import com.ordersystemtask.june.applicationService.user.LeaveUserApplicationService
 import com.ordersystemtask.june.applicationService.user.UserApplicationService
+import com.ordersystemtask.june.domain.user.entity.ReceiveAddressEntity
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
-import com.ordersystemtask.june.domain.user.repository.UserRepository
 import com.ordersystemtask.june.security.JwtUserDetails
-import org.apache.coyote.Response
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -18,30 +18,15 @@ class UserController(
     private val userApplicationService: UserApplicationService,
     private val leaveUserApplicationService: LeaveUserApplicationService
 ) {
-    private val LOGGER = LoggerFactory.getLogger(this.javaClass.name)
-
     @GetMapping("")
     fun getUser(
         @AuthenticationPrincipal userDetails: JwtUserDetails
-    ) : ResponseEntity<GetUserResponse> {
-       try {
-            val user = userApplicationService.getUser(userDetails.user.userId)
+    ) : GetUserResponse {
+        val user = userApplicationService.getUser(userDetails.userId)
 
-            val userViewModel = convertUserToViewModel(user)
-
-            return ResponseEntity
-                .ok()
-                .body(
-                    GetUserResponse(userViewModel)
-                )
-       }
-       catch (e:Exception) {
-           LOGGER.error(e.message)
-
-           return ResponseEntity
-               .internalServerError()
-               .build()
-       }
+        return GetUserResponse(
+            convertUserToViewModel(user)
+        )
     }
 
 
@@ -49,49 +34,64 @@ class UserController(
     fun updateUser(
         @AuthenticationPrincipal userDetails: JwtUserDetails,
         @RequestBody request:UpdateUserRequest
-    ) : ResponseEntity<UpdateUserResponse> {
-        try {
-            val user = userApplicationService.changeToSeller(userDetails.user.userId)
-
-            val userViewModel = convertUserToViewModel(user)
-
-            return ResponseEntity
-                .ok()
-                .body(
-                    UpdateUserResponse(userViewModel)
-                )
+    ) : UpdateUserResponse {
+        val userTrait = when(request.userTrait) {
+            UserTraitViewModelType.Normal -> UserTraitType.Normal
+            UserTraitViewModelType.Seller -> UserTraitType.Seller
         }
-        catch(e:Exception) {
-            LOGGER.error(e.message)
 
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        val user = userApplicationService.changeUserTrait(userDetails.userId, userTrait)
+
+        return UpdateUserResponse(
+            convertUserToViewModel(user)
+        )
     }
 
     @GetMapping("/{userId}")
     fun getUser(
         @PathVariable userId:Long
-    ) : ResponseEntity<GetUserResponse> {
-        try {
-            val user = userApplicationService.getUser(userId)
+    ) : GetUserResponse {
+        val user = userApplicationService.getUser(userId)
 
-            val userViewModel = convertUserToViewModel(user)
+        return GetUserResponse(
+            convertUserToViewModel(user)
+        )
+    }
 
-            return ResponseEntity
-                .ok()
-                .body(
-                    GetUserResponse(userViewModel)
-                )
+    @GetMapping("/addresses")
+    fun getUserAddresses(
+        @AuthenticationPrincipal userDetails: JwtUserDetails
+    ) : GetReceiveAddressesResponse {
+        val addresses = userApplicationService.getReceiveAddresses(
+            userDetails.userId
+        )
+
+        val addressViewModels = addresses.map {
+            convertReceiveAddressToViewModel(it)
         }
-        catch (e:Exception) {
-            LOGGER.error(e.message)
 
-            return ResponseEntity
-                .internalServerError()
-                .build()
-        }
+        return GetReceiveAddressesResponse(
+            addressViewModels
+        )
+    }
+
+    @PostMapping("/addresses")
+    fun addUserAddress(
+        @AuthenticationPrincipal userDetails: JwtUserDetails,
+        @RequestBody request: AddReceiveAddressRequest
+    ) : AddReceiveAddressResponse {
+        val newAddress = userApplicationService.addReceiveAddress(
+            userDetails.userId,
+            AddReceiveAddressData(
+                name = request.name,
+                address = request.address,
+                phoneNumber = request.phoneNumber
+            )
+        )
+
+        return AddReceiveAddressResponse(
+            convertReceiveAddressToViewModel(newAddress)
+        )
     }
 
 
@@ -103,6 +103,15 @@ class UserController(
                 UserTraitType.Normal -> UserTraitViewModelType.Normal
                 UserTraitType.Seller -> UserTraitViewModelType.Seller
             }
+        )
+    }
+
+    private fun convertReceiveAddressToViewModel(address: ReceiveAddressEntity) : ReceiveAddressViewModel {
+        return ReceiveAddressViewModel(
+            addressId = address.receiveAddressId,
+            name = address.ownerName,
+            address = address.address,
+            phoneNumber = address.phoneNumber
         )
     }
 }

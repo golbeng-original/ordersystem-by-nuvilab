@@ -7,8 +7,8 @@ import com.ordersystemtask.june.domain.store.repository.StoreRepository
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 data class StoreCreationParam(
     val ownerUserId:Long,
@@ -45,6 +45,7 @@ class StoreApplicationService(
     /**
      * 가게 리스트 가져오기
      */
+    @Transactional(readOnly = true)
     fun getStores() : List<StoreEntity> {
         val stores = storeRepository.findAll()
         return stores
@@ -53,6 +54,7 @@ class StoreApplicationService(
     /**
      * 가게 가져오기
      */
+    @Transactional(readOnly = true)
     fun getStore(storeId:Long) : StoreEntity {
         val store = storeRepository.findStoreById(storeId)
         require( store != null ) {
@@ -65,6 +67,7 @@ class StoreApplicationService(
     /**
      * 가게 개설
      */
+    @Transactional
     fun createStore(param:StoreCreationParam) : StoreCreationOutput {
 
         val user = userRepository.findUserById(param.ownerUserId)
@@ -77,7 +80,7 @@ class StoreApplicationService(
         }
 
         require(user.userTrait == UserTraitType.Seller) {
-            "not seller"
+            "일반 사용자는 상점 개설 못함"
         }
 
         val store = storeRepository.saveStore(
@@ -136,7 +139,7 @@ class StoreApplicationService(
 
         val newMenuItem = store.menus.find { alreadyExistsMenuItemIds.contains(it.menuItemId).not() }
         require(newMenuItem != null ) {
-            "MenuItem Add Error"
+            "메뉴 아이템 추가가 안됨"
         }
 
         return AddMenuItemOutput(

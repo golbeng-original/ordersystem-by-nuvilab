@@ -8,17 +8,10 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val jwtGenerator: JWTGenerator,
     private val authApplicationService: AuthApplicationService
 ) {
-
-    @GetMapping("/login")
-    fun getAuthLoginUrl() {
-        // TODO("Not yet implemented")
-    }
-
     @PostMapping("/authorize")
-    fun authorize(@RequestBody request:AuthorizeRequest): ResponseEntity<AuthorizeResponse> {
+    fun authorize(@RequestBody request:AuthorizeRequest): AuthorizeResponse {
 
         val result = authApplicationService.processAuthByOAuthAuthenticationCode(
             code = request.authorizeCode
@@ -27,22 +20,10 @@ class AuthController(
         val user = result.user
         val jwtToken = result.jwtToken
 
-        return ResponseEntity
-            .ok()
-            .body(AuthorizeResponse(
-                userId = user.userId,
-                email = user.email,
-                jwtToken = jwtToken,
-            ))
+        return AuthorizeResponse(
+            userId = user.userId,
+            email = user.email,
+            jwtToken = jwtToken,
+        )
     }
-
-    @GetMapping("/test")
-    fun test() : ResponseEntity<Unit> {
-        // TODO("Not yet implemented")
-
-        return ResponseEntity
-            .ok()
-            .build()
-    }
-
 }

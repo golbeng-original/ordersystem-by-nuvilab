@@ -1,12 +1,13 @@
 package com.ordersystemtask.june.domain.order.entity
 
+import org.hibernate.query.Order
 import java.time.LocalDateTime
 import java.util.UUID
 
 enum class OrderStatus {
     Pending, // 주문 수락 대기중
     Accepted, // 주문 수락
-    Canceled, // 주문 취소
+    Cancelled, // 주문 취소
     Completed, // 배달 완료
 }
 
@@ -49,6 +50,10 @@ class OrderEntity(
     }
 
     fun accept() {
+        require(_orderStatus == OrderStatus.Cancelled) {
+            "주문 취소된 것을 다시 수락할 수 없음"
+        }
+
         require(_orderStatus == OrderStatus.Pending) {
             "이미 처리 중인 주문"
         }
@@ -65,10 +70,11 @@ class OrderEntity(
             "주문 취소할 수 없는 상태"
         }
 
-        _orderStatus = OrderStatus.Canceled
+        _orderStatus = OrderStatus.Cancelled
     }
+
     fun complete() {
-        require(_orderStatus != OrderStatus.Canceled) {
+        require(_orderStatus != OrderStatus.Cancelled) {
             "취소 된 것을 완료 할 수 없음"
         }
 

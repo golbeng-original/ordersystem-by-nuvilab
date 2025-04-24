@@ -1,5 +1,6 @@
 package com.ordersystemtask.june.security
 
+import com.ordersystemtask.june.clients.GoogleAuthClient
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,7 +20,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfiguration(
-    private val jwtAuthenticationProvider: JwtAuthenticationProvider
+    private val jwtAuthenticationProvider: JwtAuthenticationProvider,
+    private val userRepository: UserRepository,
+    private val googleAuthClient: GoogleAuthClient,
+    private val jwtGenerator: JWTGenerator
 ) {
 
     companion object {
@@ -37,6 +41,9 @@ class SecurityConfiguration(
                 )
                 allowedMethods = listOf(
                     CorsConfiguration.ALL
+                )
+                exposedHeaders = listOf(
+                    "X-NEW-TOKEN"
                 )
             }
 
@@ -80,8 +87,14 @@ class SecurityConfiguration(
             }
 
             authenticationManager(authenticationManager)
+
             addFilterBefore(
-                JwtAuthenticationFilter(authenticationManager),
+                JwtAuthenticationFilter(
+                    authenticationManager,
+                    userRepository,
+                    googleAuthClient,
+                    jwtGenerator
+                ),
                 UsernamePasswordAuthenticationFilter::class.java
             )
         }

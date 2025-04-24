@@ -14,6 +14,11 @@ data class AuthorizationResponse(
     val expireSeconds:Long
 )
 
+data class ResolveAccessTokenResponse(
+    val accessToken: String,
+    val expireSeconds:Long
+)
+
 data class GoogleOAuthTokenSuccessPayload(
     @SerializedName("access_token")
     val accessToken: String,
@@ -23,6 +28,13 @@ data class GoogleOAuthTokenSuccessPayload(
     val expiresIn: Int,
     @SerializedName("id_token")
     val idToken:String
+)
+
+data class GoogleOAuthResolveTokenSuccessPayload(
+    @SerializedName("access_token")
+    val accessToken: String,
+    @SerializedName("expires_in")
+    val expiresIn: Int
 )
 
 data class GoogleOAuthTokenErrorPayload(
@@ -127,8 +139,50 @@ class GoogleAuthClient(
      * AccessToken 검증
      */
     fun vaildateAccessToken(accessToken:String) {
-        // TODO
-        // 1745226593 - 1745222993 = 3600
+        // TODO : NotImplemented
+    }
+
+    fun resolveAccessToken(refreshToken:String) : ResolveAccessTokenResponse {
+        val requestBody = okhttp3.FormBody.Builder().run {
+            add("grant_type", "refresh_token")
+            add("client_id", _clientId)
+            add("client_secret", _clientSecretKey)
+            add("refresh_token", refreshToken)
+            build()
+        }
+
+        val request = okhttp3.Request.Builder().run {
+            url(_requestTokenUrl)
+            header("Content-Type", "application/x-www-form-urlencoded")
+            post(requestBody)
+            build()
+        }
+
+        val response = _client
+            .newCall(request)
+            .execute()
+
+        val body = response.body.string()
+
+        if( response.isSuccessful == false ) {
+            val errorPayload = Gson()
+                .fromJson(
+                    body,
+                    GoogleOAuthTokenErrorPayload::class.java
+                )
+
+            throw Exception(errorPayload.error)
+        }
+
+        val successPayload = Gson().fromJson(
+            body,
+            GoogleOAuthResolveTokenSuccessPayload::class.java
+        )
+
+        return ResolveAccessTokenResponse(
+            accessToken = successPayload.accessToken,
+            expireSeconds = successPayload.expiresIn.toLong()
+        )
     }
 
     private fun parsingIdToken(idToken:String) : GoogleOauthIdTokenPayload {

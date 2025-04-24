@@ -35,6 +35,15 @@ class OrderRepository @Autowired constructor(
         return convertToEntity(model)
     }
 
+    fun findByStoreId(storeId:Long) : List<OrderEntity> {
+        val models = context.findByStoreId(storeId)
+        if( models.isEmpty() ) {
+            return emptyList()
+        }
+
+        return models.map { convertToEntity(it) }
+    }
+
     fun save(orderEntity: OrderEntity) : OrderEntity {
         val model = convertToModel(orderEntity)
 
