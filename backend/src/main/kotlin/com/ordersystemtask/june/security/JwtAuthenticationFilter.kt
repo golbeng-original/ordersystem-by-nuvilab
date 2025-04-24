@@ -11,6 +11,15 @@ class JwtAuthenticationFilter(
     private val authenticationManager: AuthenticationManager,
 ) : OncePerRequestFilter() {
 
+    private val skipPaths = listOf(
+        "/auth/authorize"
+    )
+
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        val path = request.requestURI
+        return skipPaths.any { path.startsWith(it) }
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -19,8 +28,6 @@ class JwtAuthenticationFilter(
         println("enter JwtAuthenticationFilter from ${request.requestURI}")
 
         val authorizationValue = request.getHeader("Authorization")?.replace("Bearer ", "")
-        println("authorizationValue : ${authorizationValue}")
-
         if( authorizationValue.isNullOrEmpty() ) {
             filterChain.doFilter(request, response)
             return
@@ -31,6 +38,7 @@ class JwtAuthenticationFilter(
         )
 
         SecurityContextHolder.getContext().authentication = authResult
+
 
         filterChain.doFilter(request, response)
     }

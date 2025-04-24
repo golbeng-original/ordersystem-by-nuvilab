@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import AuthorizeCallbackWidget from "../../features/auth/widgets/AuthorizeCallbackWidget";
 
-const AuthorizeCallback = () => {
-
+const AuthorizeCallbackPage = () => {
+    
     return (
         <Box sx={{
             display: 'flex',
@@ -22,4 +22,4 @@ const AuthorizeCallback = () => {
     );
 }
 
-export default AuthorizeCallback;
+export default AuthorizeCallbackPage;

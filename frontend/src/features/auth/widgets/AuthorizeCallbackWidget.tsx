@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useHttpClient } from "../../../shared/http/httpClientContext";
 
@@ -13,31 +13,30 @@ const AuthorizeCallbackWidget = () => {
     const [searchParams] = useSearchParams();
     const { httpClient, updateTokenForHttpClient } = useHttpClient();
 
+    const onAuthorize = useCallback(async (authorizeCode:string) => {
+
+        const body = {
+            authorizeCode: authorizeCode,
+        }
+
+        const response = await httpClient.post({
+            path: '/auth/authorize',
+            body: body
+        });
+
+        const payload = response.data as AuthorizeResponsePayload;
+
+        updateTokenForHttpClient(payload.jwtToken);
+
+        window.location.href = 'http://localhost:8080/auth/authticated';
+
+    }, []);
+    
+
     useEffect(() => {
         const authorizeCode = searchParams.get('code')
-
-        const requestAuthorize = async () => {
-
-            const body = {
-                authorizeCode: authorizeCode,
-            }
-
-            const response = await httpClient.post({
-                path: '/auth/authorize',
-                body: body
-            });
-
-            const payload = response.data as AuthorizeResponsePayload;
-            httpClient.updateAuthorization(payload.jwtToken);
-
-            updateTokenForHttpClient(payload.jwtToken);
-
-            window.location.href = 'http://localhost:8080/auth/authticated';
-        };
-
-        requestAuthorize();
-
-    }, [])
+        onAuthorize(authorizeCode as string)
+    }, []);
 
     return (
         <></>

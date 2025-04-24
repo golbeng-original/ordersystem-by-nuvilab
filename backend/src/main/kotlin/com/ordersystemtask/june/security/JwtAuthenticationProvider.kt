@@ -29,8 +29,6 @@ class JwtAuthenticationProvider(
     override fun authenticate(authentication: Authentication?): Authentication {
         val token = (authentication as JwtAuthenticationToken).token
 
-        println("enter Jwt AuthenticationProvider")
-
         val claims = jwtGenerator.deserialize(token)
         if( claims == null ) {
             throw BadCredentialsException("Invalid JWT token")
@@ -43,16 +41,19 @@ class JwtAuthenticationProvider(
 
         // userDetailsService에서 실제 검증 유저 정보 찾기
         val userDetails = jwtUserDetailsService.loadUserByUsername(claims.userId.toString())
-
         return UsernamePasswordAuthenticationToken(
             userDetails,
             null,
-            emptyList()
+            userDetails.authorities
         )
     }
 
     override fun supports(authentication: Class<*>?): Boolean {
-        return JwtAuthenticationToken::class.java.isAssignableFrom(authentication!!)
+        if( authentication == null ) {
+            return false
+        }
+
+        return JwtAuthenticationToken::class.java.isAssignableFrom(authentication)
     }
 
 }

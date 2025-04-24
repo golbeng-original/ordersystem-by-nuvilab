@@ -11,6 +11,18 @@ class UserApplicationService(
     private val userRepository: UserRepository
 ) {
     /**
+     * 유저 가져오기
+     */
+    fun getUser(userId:Long) : UserEntity {
+        val user = userRepository.findUserById(userId)
+        require(user != null) {
+            "User not found"
+        }
+
+        return user
+    }
+
+    /**
      * 유저를 판매자로 승격
      */
     fun changeToSeller(userId:Long) : UserEntity {
@@ -26,9 +38,9 @@ class UserApplicationService(
     }
 
     /**
-     * 유저의 배달 받을 주소를 변경
+     * 유저의 배달 받을 주소 추가
      */
-    fun updateReceiveAddress(userId:Long) {
+    fun addReceiveAddress(userId:Long) {
 
     }
 }

@@ -7,6 +7,7 @@ import com.ordersystemtask.june.domain.store.repository.StoreRepository
 import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
 data class StoreCreationParam(
@@ -20,13 +21,14 @@ data class StoreCreationOutput(
     val storeEntity:StoreEntity,
 )
 
-data class UpdateMenuItemsParam(
+data class AddMenuItemsParam(
     val storeId:Long,
-    val menuItemUnits:List<StoreUpdateMenuItemUnit>
+    val menuItemUnit:StoreUpdateMenuItemUnit
 )
 
-data class UpdateMenuItemsOutput(
-    val storeEntity:StoreEntity
+data class AddMenuItemOutput(
+    val store:StoreEntity,
+    val newMenuItem:MenuItemEntity
 )
 
 data class StoreUpdateMenuItemUnit(
@@ -35,15 +37,31 @@ data class StoreUpdateMenuItemUnit(
     val price:Long,
 )
 
-data class StoreUpdateMenuItemOutput(
-    val storeEntity:StoreEntity
-)
-
 @Service
 class StoreApplicationService(
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
 ) {
+    /**
+     * 가게 리스트 가져오기
+     */
+    fun getStores() : List<StoreEntity> {
+        val stores = storeRepository.findAll()
+        return stores
+    }
+
+    /**
+     * 가게 가져오기
+     */
+    fun getStore(storeId:Long) : StoreEntity {
+        val store = storeRepository.findStoreById(storeId)
+        require( store != null ) {
+            "Store not found"
+        }
+
+        return store
+    }
+
     /**
      * 가게 개설
      */
@@ -79,6 +97,7 @@ class StoreApplicationService(
     /**
      * 가게 삭제
      */
+    @Transactional
     fun removeStore(storeId:Long) {
         val store = storeRepository.findStoreById(storeId)
         require(store != null) {
@@ -93,38 +112,44 @@ class StoreApplicationService(
     /**
      * 가게 메뉴 수정
      */
-    fun updateMenuItems(param:UpdateMenuItemsParam) : StoreUpdateMenuItemOutput{
+    @Transactional
+    fun addMenuItems(param:AddMenuItemsParam) : AddMenuItemOutput {
 
         val (storeId, menuItemUnits) = param
 
-        val store = storeRepository.findStoreById(storeId)
+        var store = storeRepository.findStoreById(storeId)
         require(store != null) {
             "Store not found"
         }
 
-        store.removeAllMenuItem()
+        val alreadyExistsMenuItemIds = store.menus.map { it.menuItemId }
 
-        val menuItems = menuItemUnits.map {
+        store.addMenuItem(
             MenuItemEntity.new(
-                name = it.name,
-                description = it.description,
-                price = it.price
+                name = menuItemUnits.name,
+                description = menuItemUnits.description,
+                price = menuItemUnits.price
             )
+        )
+
+        store = storeRepository.saveStore(store)
+
+        val newMenuItem = store.menus.find { alreadyExistsMenuItemIds.contains(it.menuItemId).not() }
+        require(newMenuItem != null ) {
+            "MenuItem Add Error"
         }
 
-        store.addMenuItems(menuItems)
-
-        storeRepository.saveStore(store)
-
-        return StoreUpdateMenuItemOutput(
-            storeEntity = store
+        return AddMenuItemOutput(
+            store = store,
+            newMenuItem = newMenuItem
         )
     }
 
     /**
      * 가게 상태 변경
      */
-    fun updateStoreStatus(storeId:Long, storeStatus:StoreStatus) {
+    @Transactional
+    fun updateStoreStatus(storeId:Long, storeStatus:StoreStatus) : StoreEntity {
         val store = storeRepository.findStoreById(storeId)
         require(store != null) {
             "Store not found"
@@ -132,6 +157,6 @@ class StoreApplicationService(
 
         store.changeStoreStatus(storeStatus)
 
-        storeRepository.saveStore(store)
+        return storeRepository.saveStore(store)
     }
 }

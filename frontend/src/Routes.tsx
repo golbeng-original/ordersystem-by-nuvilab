@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom"
 
 import App from "./App"
-import AuthorizeCallback from "./pages/auth/AuthorizeCallback"
-import Authenticated from "./pages/auth/Authenticated"
+import AuthorizeCallbackPage from "./pages/auth/AuthorizeCallback"
+import AuthenticatedPage from "./pages/auth/Authenticated"
 
 
 const AppRoutes = () => {
@@ -11,8 +11,8 @@ const AppRoutes = () => {
         <>
             <Routes>
                 <Route path="/" element={<App />} />
-                <Route path="/auth/callback" element={<AuthorizeCallback />} />
-                <Route path="/auth/authticated" element={<Authenticated />} />
+                <Route path="/auth/callback" element={<AuthorizeCallbackPage />} />
+                <Route path="/auth/authticated" element={<AuthenticatedPage />} />
                 <Route path="*" element={<App />} />
             </Routes>
         </>

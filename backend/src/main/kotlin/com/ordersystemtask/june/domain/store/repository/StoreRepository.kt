@@ -13,6 +13,14 @@ import org.springframework.stereotype.Service
 class StoreRepository @Autowired constructor(
     private val context: StoreDBContext
 ) {
+    fun findAll() : List<StoreEntity> {
+        val models = context.findAll()
+
+        return models.map {
+            convertToEntity(it)
+        }
+
+    }
     fun findStoreById(storeId: Long): StoreEntity? {
         val model = context.findByStoreId(storeId)
         if( model == null ) {

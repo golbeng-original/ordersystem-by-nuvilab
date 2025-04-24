@@ -14,7 +14,7 @@ class UserRepository @Autowired constructor(
 ) {
     fun findAuthenticationUserById(userId: Long): AuthenticationUserEntity? {
 
-        val userModel = context.findByUserId(userId)
+        val userModel = context.findForAuthentication(userId)
         if( userModel === null ) {
             return null
         }

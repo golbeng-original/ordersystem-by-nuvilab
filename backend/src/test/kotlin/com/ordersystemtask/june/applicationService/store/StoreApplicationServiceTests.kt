@@ -7,8 +7,6 @@ import com.ordersystemtask.june.domain.user.entity.UserTraitType
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -87,29 +85,22 @@ class StoreApplicationServiceTests @Autowired constructor(
     fun `가게에 메뉴 추가`() {
 
         // given
-        val menuItemUnits = listOf(
-            StoreUpdateMenuItemUnit(
-                name = "메뉴 이름 1",
-                description = "메뉴 설명 1",
-                price = 1000,
-            ),
-            StoreUpdateMenuItemUnit(
-                name = "메뉴 이름 2",
-                description = "메뉴 설명 2",
-                price = 3000,
-            ),
+        val menuItemUnit = StoreUpdateMenuItemUnit(
+            name = "메뉴 이름 1",
+            description = "메뉴 설명 1",
+            price = 1000,
         )
 
         // when
-        val output = sut.updateMenuItems(
-            UpdateMenuItemsParam(
+        val output = sut.addMenuItems(
+            AddMenuItemsParam(
                 storeId = 1L,
-                menuItemUnits = menuItemUnits
+                menuItemUnit = menuItemUnit
             )
         )
 
         // then
-        val store = output.storeEntity
-        Assertions.assertEquals(store.menus.size, 2)
+        val store = output.store
+        Assertions.assertEquals(store.menus.size, 1)
     }
 }

@@ -20,15 +20,11 @@ data class JwtClaims(
 class JWTGenerator(
     val secretKeyPlainText:String
 ) {
-
     private val secretKey = Keys.hmacShaKeyFor(secretKeyPlainText.toByteArray())
-
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
 
     fun generate(userId:Long, accessToken:String, expireSeconds:Long) : String {
-
         val now = Date()
-
         val jwtToken = Jwts.builder().run {
             setSubject(userId.toString())
             claim("accessToken", accessToken)

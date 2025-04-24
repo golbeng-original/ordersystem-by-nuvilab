@@ -1,15 +1,18 @@
 import { Box, Typography } from "@mui/material";
 import { useHttpClient } from "../../shared/http/httpClientContext";
 import { useEffect } from "react";
+import useStoreAuth from "../../shared/http/store/storeAuth";
 
-const Authenticated = () => {
+const AuthenticatedPage = () => {
 
     const { httpClient } = useHttpClient();
+    const { token } = useStoreAuth();
 
     useEffect(() => {
 
-        const requestTest = async () => {
+        console.log(token)
 
+        const requestTest = async () => {
             await httpClient.get({
                 path: '/auth/test'
             });
@@ -27,4 +30,4 @@ const Authenticated = () => {
     )    
 }
 
-export default Authenticated;
+export default AuthenticatedPage;
