@@ -3,6 +3,7 @@ package com.ordersystemtask.june.clients
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 import java.net.URI
 import java.net.URLEncoder
@@ -57,11 +58,10 @@ data class GoogleOauthIdTokenPayload(
 )
 
 @Component
+@ConfigurationProperties("oauth-provider.google")
 class GoogleOAuthConfig(
-    @Value("\${oauthProvider.google.clientId}")
-    val clientId: String,
-    @Value("\${oauthProvider.google.clientSecret}")
-    val clientSecret: String,
+    var clientId: String = "",
+    var clientSecret: String = ""
 )
 
 class GoogleAuthClient(

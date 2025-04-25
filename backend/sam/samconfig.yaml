@@ -3,7 +3,7 @@ version: 0.1
 default:
   global:
     parameters:
-      stack_name: ordersystem-frontend-stack
+      stack_name: ordersystem-backend-stack
   build:
     parameters:
       cached: true
@@ -24,15 +24,27 @@ default:
     parameters:
       warm_containers: EAGER
 
-frontend:
+server:
   deploy:
     parameters:
       capabilities: CAPABILITY_NAMED_IAM
       confirm_changeset: true
       resolve_s3: true
-      region: ap-northeast-2
       profile: default
-      stack_name: ordersystem-frontend-stack
-      s3_prefix: ordersystem-frontend-stack
+      region: ap-northeast-2
+      stack_name: ordersystem-backend-stack
+      s3_prefix: ordersystem-backend-stack
+      tags:
+        - group=ordersystem
+ecr:
+  deploy:
+    parameters:
+      capabilities: CAPABILITY_NAMED_IAM
+      confirm_changeset: true
+      resolve_s3: true
+      profile: default
+      region: ap-northeast-2
+      stack_name: ordersystem-ecr-stack
+      s3_prefix: ordersystem-ecr-stack
       tags:
         - group=ordersystem

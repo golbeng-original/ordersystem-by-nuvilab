@@ -1,6 +1,6 @@
 import moment from "moment";
-import { Box, Button, Divider, List, ListItem, ListItemText, Paper, Typography } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { Box, Button, List, ListItem, ListItemText, Paper, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface OrderedMenuItem {
     id: string;

@@ -2,8 +2,11 @@ import { createContext, PropsWithChildren, useContext, useEffect } from "react";
 import HttpClient from "./httpClient";
 import useStoreAuth from "./store/storeAuth";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const httpClient = new HttpClient('http://localhost:80');
+console.log('BASE_URL', BASE_URL);
+
+const httpClient = new HttpClient(BASE_URL);
 
 const HttpClientContext = createContext<HttpClient | undefined>(undefined);
 

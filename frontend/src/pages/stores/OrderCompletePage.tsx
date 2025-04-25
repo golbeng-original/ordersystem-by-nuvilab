@@ -1,4 +1,4 @@
-import { Box, Button, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Button, List, ListItem, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import useGetOrder, { OrderPayload } from "../../features/stores/hooks/useGetOrder";
 import { useEffect } from "react";

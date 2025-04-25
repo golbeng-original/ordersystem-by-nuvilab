@@ -2,13 +2,6 @@ import { useEffect } from "react"
 import { useHttpClient } from "../../../shared/http/httpClientContext";
 import useStoreUser, { UserAddressEntity } from "../store/storeUser";
 
-interface MenuItemPayload {
-    menuItemId: string;
-    name: string;
-    desc: string;
-    price: number;
-}
-
 interface AddressPayload {
     addressId: string;
     name: string;

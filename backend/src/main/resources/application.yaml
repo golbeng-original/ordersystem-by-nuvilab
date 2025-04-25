@@ -21,7 +21,7 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-oauthProvider:
-    google:
-      clientId: ${GOOGLE_OAUTH_CLIENT_ID}
-      clientSecret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+oauth-provider:
+  google:
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID}
+    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET}

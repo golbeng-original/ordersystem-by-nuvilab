@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  [NuviLab]OrderSystem ECR
+
+Resources:
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: ordersystem-backend
+      ImageScanningConfiguration:
+        scanOnPush: true
+      ImageTagMutability: MUTABLE
+      Tags:
+        - Key: Name
+          Value: ordersystem-backend-repo
+
+
+Outputs:
+  ECRRepositoryUri:
+    Description: URI of the ECR repository
+    Value: !GetAtt ECRRepository.RepositoryUri

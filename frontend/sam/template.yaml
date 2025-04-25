@@ -10,6 +10,30 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: ordersystem-nuvilab.frontend
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false      # ← 이거 풀어줘야 퍼블릭 정책 허용됨
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Name
+          Value: ordersystem-nuvilab.frontend
+
+  FrontEndS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontEndS3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub '${FrontEndS3Bucket.Arn}/*'
 
 Outputs:
   FrontEndS3Bucket:

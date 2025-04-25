@@ -1,2 +1,22 @@
 version: '3'
-# tasks:
+
+
+tasks:
+  docker-build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t ordersystem-app:latest .
+
+  docker-run:
+    silent: true
+    desc: Run the Docker container
+    vars:
+      GOOGLE_CLIENT_ID: '{{.GOOGLE_OAUTH_CLIENT_ID | default ""}}'
+      GOOGLE_CLIENT_SECRET: '{{.GOOGLE_OAUTH_CLIENT_SECRET | default ""}}'
+    cmds:
+      - cmd: |
+          docker run -d \
+          -p 80:80 \
+          -e GOOGLE_OAUTH_CLIENT_ID={{.GOOGLE_CLIENT_ID}} \
+          -e GOOGLE_OAUTH_CLIENT_SECRET={{.GOOGLE_CLIENT_SECRET}} \
+          ordersystem-app
