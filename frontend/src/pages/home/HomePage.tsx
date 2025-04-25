@@ -49,8 +49,8 @@ const HomePage = () => {
         <Box
             sx={{
               background: 'linear-gradient(to right, #667eea, #764ba2)',
-              minWidth: '100vh',
-              minHeight: '100vh',
+			  width: '100vw',
+			  height: '100vh',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

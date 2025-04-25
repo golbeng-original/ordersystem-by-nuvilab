@@ -1,38 +1,85 @@
 import { Box, Button, List, ListItem, ListItemText, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import useGetOrder, { OrderPayload } from "../../features/stores/hooks/useGetOrder";
+import { useEffect } from "react";
 
-interface OrderItem {
-    id: number;
-    title: string;
-    quantity: number;
-    price: number;
+
+const OrderedItems = (props:{
+    orderPayload: OrderPayload | null;
+}) => {
+
+    const { orderPayload } = props;
+
+    if( !orderPayload ) {
+        return (
+            <></>
+        )
+    }
+
+    return (
+        <List sx={{ 
+            textAlign: 'left', 
+            mb: 3, 
+        }}>
+            {Array.from(orderPayload.orderedItems).map((item, index) => (
+                <ListItem key={index} disableGutters>
+                    <Box sx={{
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        width: '100%',
+                    }}>
+                        <Typography >
+                            {`${item.menuName} x ${item.quantity}개`}
+                        </Typography>
+                        <Box sx={{width: '30px'}}/>
+                        <Typography>
+                            {`금액: ${item.unitPrice.toLocaleString()}원`}
+                        </Typography>
+                    </Box>
+                </ListItem>
+            ))}
+        </List>
+    );
+
 }
 
-interface ReceiveAddress {
-    ownerName: string;
-    address: string;
-    phoneNumber: string;
-}
+const ReceiveAddressWidget = (props:{
+    orderPayload: OrderPayload | null;
+}) => {
+    const { orderPayload } = props;
 
-const orderItems: OrderItem[] = [
-    { id: 1, title: "Menu 1", quantity: 2, price: 1000 },
-    { id: 2, title: "Menu 2", quantity: 1, price: 2000 },
-    { id: 3, title: "Menu 3", quantity: 3, price: 3000 },
-]
+    if( !orderPayload ) {
+        return (
+            <></>
+        );
+    }
 
-const receiveAddress: ReceiveAddress = {
-    ownerName: "홍길동",
-    address: "서울시 강남구 역삼동",
-    phoneNumber: "010-1234-5678",
+    return (
+        <>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+                {`받는 분: ${orderPayload.deliveryInfo.receiverName}`}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+                {`주소 : ${orderPayload.deliveryInfo.address}`}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+                {`전화번호 : ${orderPayload.deliveryInfo.receiverPhoneNumber}`}
+            </Typography>
+        </>
+    );
 }
 
 const OrderCompletePage = () => {
 
     const { orderId } = useParams();
 
-    console.log(orderId);
-
     const navigate = useNavigate();
+
+    const {orderPayload, requestOrderInfo} = useGetOrder();
+
+    useEffect(() => {
+        requestOrderInfo(orderId!);
+    }, []);
 
     const onHandleGoHome = () => {
       navigate('/stores'); // 홈으로 이동
@@ -45,8 +92,8 @@ const OrderCompletePage = () => {
     return (
         <Box sx={{ 
             background: 'linear-gradient(to right, #667eea, #764ba2)',
-            minWidth: '100vh',
-            minHeight: '100vh',
+            width: '100vw',
+            height: '100vh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -58,40 +105,12 @@ const OrderCompletePage = () => {
             <Typography variant="body1" sx={{ mb: 3 }}>
                 주문해 주셔서 감사합니다. 아래는 주문 내역입니다.
             </Typography>
-            <List sx={{ 
-                textAlign: 'left', 
-                mb: 3, 
-            }}>
-                {orderItems.map((item, index) => (
-                    <ListItem key={index} disableGutters>
-                        <Box sx={{
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            width: '100%', 
-                        }}>
-                            <Typography >
-                                {`${item.title} x ${item.quantity}개`}
-                            </Typography>
-                            <Typography>
-                                {`금액: ${item.price.toLocaleString()}원`}
-                            </Typography>
-                        </Box>
-                    </ListItem>
-                ))}
-            </List>
+            <OrderedItems orderPayload={orderPayload} />
 
             <Typography variant="h6" gutterBottom>
                 배송지 정보
             </Typography>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-                {`받는 분: ${receiveAddress.ownerName}`}
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-                {`주소 : ${receiveAddress.address}`}
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-                {`전화번호 : ${receiveAddress.phoneNumber}`}
-            </Typography>
+            <ReceiveAddressWidget orderPayload={orderPayload} />
 
             <Box sx={{
                 display: 'flex', 

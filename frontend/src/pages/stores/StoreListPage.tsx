@@ -17,7 +17,9 @@ const StoreItem = (props:{
 
     return (
         <Grid>
-            <Card>
+            <Card sx={{
+                width: '180px'
+            }}>
                 <CardActionArea onClick={() => onHandleStoreClick()}>
                     <Box
                         sx={{
@@ -57,8 +59,8 @@ const StoreListPage = () => {
     return (
         <Container sx={{
             background: 'linear-gradient(to right, #667eea, #764ba2)',
-            minWidth: '100vh',
-            minHeight: '100vh',
+            width: '100vw',
+            height: '100vh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

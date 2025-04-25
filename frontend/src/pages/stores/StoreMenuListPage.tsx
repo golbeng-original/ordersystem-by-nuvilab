@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useStoreStores, { StoreEntity, StoreMenuItemEntity } from "../../features/stores/store/storeStores";
 import useGetAddresses from "../../features/user/hooks/useGetAddresses";
+import useRequestOrder, { OrderPayload } from "../../features/stores/hooks/useRequestOrder";
 
 interface OrderForm {
     storeId: number;
@@ -145,9 +146,12 @@ const StoreMenuListPage = () => {
 
     const { storeId } = useParams();
     const navigate = useNavigate();
+
     const selectedStore = useStoreStores((state => {
         return state.stores.find(store => store.id === Number(storeId))
     }));
+
+    const { orderId, requestOrder } = useRequestOrder();
 
 
     const [orderForm, setOrderForm] = useState<OrderForm>({
@@ -155,11 +159,13 @@ const StoreMenuListPage = () => {
         addressId: '',
         paymentMethod: 'CREDIT_CARD',
         menus: {}
-    })
+    });
 
-    //useEffect(() => {
-    //    console.log(orderForm);
-    //}, [orderForm])
+    useEffect(() => {
+        if( orderId ) {
+            navigate(`/order/${orderId}`)
+        }
+    }, [orderId])
 
     const onUpdateAddress = (addressId:string) => {
         setOrderForm((prev) => ({
@@ -194,18 +200,28 @@ const StoreMenuListPage = () => {
         navigate('/stores');
     }
 
-    const onHandlePayment = () => {
+    const onHandlePayment = async () => {
 
-        // 이부분에서 진행해야 한다...
-        //orderForm
-        navigate(`/order/123124`)
+        const useRequestOrder:OrderPayload = {
+            storeId: orderForm.storeId,
+            menuItems: Object.entries(orderForm.menus).map(
+                ([menuId, quantity]) => ({
+                    menuItemId: menuId,
+                    quantity: quantity
+                })
+            ),
+            receiveAddressId: orderForm.addressId,
+            paymentMethod: 'Card'
+        };
+
+        await requestOrder(useRequestOrder);
     }
 
     return (
         <Box sx={{ 
             background: 'linear-gradient(to right, #667eea, #764ba2)',
-            minWidth: '100vh',
-            minHeight: '100vh',
+            width: '100vw',
+            height: '100vh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
