@@ -8,6 +8,7 @@ import com.ordersystemtask.june.domain.user.entity.UserEntity
 import com.ordersystemtask.june.domain.user.repository.UserRepository
 import com.ordersystemtask.june.security.JWTGenerator
 import org.springframework.stereotype.Service
+import java.net.URI
 
 data class ProcessAuthResult(
     val user: UserEntity,
@@ -21,7 +22,14 @@ class AuthApplicationService(
     private val googleAuthClient: GoogleAuthClient
 ) {
 
-    // 유저 반환하기
+    fun getGoogleOauthLoginUrl() : URI {
+        return googleAuthClient.generateAuthorizationUrl()
+    }
+
+    /**
+     * OAuth 인증 코드로 인증 처리
+     * - 자동 회원가입 처리
+     */
     fun processAuthByOAuthAuthenticationCode(code:String) : ProcessAuthResult {
         val response = googleAuthClient.requestAuthorization(code)
 

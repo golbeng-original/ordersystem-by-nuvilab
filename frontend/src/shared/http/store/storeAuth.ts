@@ -7,6 +7,7 @@ type AuthState = {
 
 type AuthActions = {
     updateToken: (token: string) => void;
+    clearToken: () => void;
 }
 
 const useStoreAuth = create(
@@ -15,9 +16,10 @@ const useStoreAuth = create(
             token: null,
             //
             updateToken: (token: string) => set({ token }),
+            clearToken: () => set({ token: null }),
         }),
         {
-            name: 'user-auth-storage'
+            name: 'auth-storage'
         }
     )
 );

@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.net.URI
+import java.net.URLEncoder
 import java.util.Base64
 
 data class AuthorizationResponse(
@@ -71,11 +73,31 @@ class GoogleAuthClient(
         const val SCOPE = "email profile openid"
     }
 
+    private val _authorizationUrl = "https://accounts.google.com/o/oauth2/v2/auth"
     private val _requestTokenUrl = "https://oauth2.googleapis.com/token"
     private val _clientId = config.clientId
     private val _clientSecretKey = config.clientSecret
 
     private val _client = okhttp3.OkHttpClient()
+
+    fun generateAuthorizationUrl() : URI {
+        val stringBuilder = StringBuilder()
+        stringBuilder.append(_authorizationUrl)
+        stringBuilder.append("?")
+        stringBuilder.append("client_id="+URLEncoder.encode(_clientId, Charsets.UTF_8))
+        stringBuilder.append("&")
+        stringBuilder.append("scope="+URLEncoder.encode("email profile openid", Charsets.UTF_8))
+        stringBuilder.append("&")
+        stringBuilder.append("response_type=code")
+        stringBuilder.append("&")
+        stringBuilder.append("access_type=offline")
+        stringBuilder.append("&")
+        stringBuilder.append("prompt=consent")
+        stringBuilder.append("&")
+        stringBuilder.append("redirect_uri="+URLEncoder.encode(REDIRECT_URI, Charsets.UTF_8))
+
+        return URI.create(stringBuilder.toString())
+    }
 
     /**
      * Authorization Code를 accessToken, refreshToken으로 교환

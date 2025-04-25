@@ -23,5 +23,5 @@ spring:
 
 oauthProvider:
     google:
-      clientId: XXXXX
+      clientId: XXXX
       clientSecret: XXXX

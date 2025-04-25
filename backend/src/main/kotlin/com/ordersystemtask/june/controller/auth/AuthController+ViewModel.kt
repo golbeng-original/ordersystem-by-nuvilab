@@ -1,5 +1,9 @@
 package com.ordersystemtask.june.controller.auth
 
+data class GetLoginUrlResponse(
+    val loginUrl: String
+)
+
 data class AuthorizeRequest(
     val authorizeCode: String
 )

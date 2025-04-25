@@ -1,0 +1,38 @@
+version: 0.1
+
+default:
+  global:
+    parameters:
+      stack_name: ordersystem-nuvilab-stack
+  build:
+    parameters:
+      cached: true
+      parallel: true
+  validate:
+    parameters:
+      lint: true
+  package:
+    parameters:
+      resolve_s3: true
+  sync:
+    parameters:
+      watch: true
+  local_start_api:
+    parameters:
+      warm_containers: EAGER
+  local_start_lambda:
+    parameters:
+      warm_containers: EAGER
+
+resource:
+  deploy:
+    parameters:
+      capabilities: CAPABILITY_NAMED_IAM
+      confirm_changeset: true
+      resolve_s3: true
+      region: ap-northeast-2
+      profile: golbeng0
+      stack_name: ordersystem-nuvilab-stack
+      s3_prefix: ordersystem-nuvilab-stack
+      tags:
+        - group=ordersystem

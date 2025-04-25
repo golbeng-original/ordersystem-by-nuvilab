@@ -1,7 +1,8 @@
 package com.ordersystemtask.june.controller.auth
 
 import com.ordersystemtask.june.applicationService.auth.AuthApplicationService
-import com.ordersystemtask.june.security.JWTGenerator
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -10,6 +11,15 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val authApplicationService: AuthApplicationService
 ) {
+    @GetMapping("/login")
+    fun getLoginUrl() : GetLoginUrlResponse {
+        val loginUrl = authApplicationService.getGoogleOauthLoginUrl()
+
+        return GetLoginUrlResponse(
+            loginUrl = loginUrl.toURL().toString()
+        )
+    }
+
     @PostMapping("/authorize")
     fun authorize(@RequestBody request:AuthorizeRequest): AuthorizeResponse {
 

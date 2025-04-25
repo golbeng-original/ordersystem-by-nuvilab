@@ -1,0 +1,43 @@
+version: '3'
+
+vars:
+  SAM_ROOT_PATH:
+    sh: echo "$(pwd)/sam"
+
+tasks:
+  deploy-aws-*:
+    desc: Deploy AWS Infura [dev, prod]
+    cmds:
+      - echo "🚀 Deploying AWS Infuras [dev, prod]"
+      - sam build --tamplate-file {{.SAM_ROOT_PATH}}/template-{{.ENVIROMENTS}}.yaml --config-file {{.SAM_ROOT_PATH}}/samconfig-{{.ENVIROMENTS}}.yaml --config-dev {{.CONFIG_SECION}} --profile pomerium_space
+      - sam deploy --template-file {{.SAM_ROOT_PATH}}/template-{{.ENVIROMENTS}}.yaml --config-file {{.SAM_ROOT_PATH}}/samconfig-{{.ENVIROMENTS}}.yaml --config-dev {{.CONFIG_SECION}} --profile pomerium_space
+
+    vars:
+      ENVIROMENTS: '{{index .MATCH 0}}'
+      CONFIG_SECTION: 'resource'
+
+  deploy-frontend-dev:
+    desc: Deploy Frontend [dev]
+    cmds:
+      - echo "🚀 Deploying Frontend [dev]"
+      - rm -rf node_modules
+      - rm -rf build
+      - npm install
+      - npm run build:dev
+      - aws s3 cp ./build {{.DEPLOY_S3_ENDPOINT}} --recursive --region ap-southeast-2 --profile pomerium_space
+
+    vars:
+      DEPLOY_S3_ENDPOINT: 's3://pomerium-space-platform.develop.frontend'
+
+  deploy-frontend-prod:
+    desc: Deploy Frontend [prod]
+    cmds:
+      - echo "🚀 Deploying Frontend [prod]"
+      - rm -rf node_modules
+      - rm -rf build
+      - npm install
+      - npm run build
+      - aws s3 cp ./build {{.DEPLOY_S3_ENDPOINT}} --recursive --region ap-southeast-1 --profile pomerium_space
+
+    vars:
+      DEPLOY_S3_ENDPOINT: 's3://pomerium-space-platform.production.frontend'

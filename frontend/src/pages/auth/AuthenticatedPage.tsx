@@ -1,24 +1,17 @@
 import { Box, Typography } from "@mui/material";
-import { useHttpClient } from "../../shared/http/httpClientContext";
 import { useEffect } from "react";
 import useStoreAuth from "../../shared/http/store/storeAuth";
+import { useNavigate } from "react-router-dom";
 
 const AuthenticatedPage = () => {
 
-    const { httpClient } = useHttpClient();
     const { token } = useStoreAuth();
 
+    const navigator = useNavigate();
+
     useEffect(() => {
-
         console.log(token)
-
-        const requestTest = async () => {
-            await httpClient.get({
-                path: '/user'
-            });
-        }
-
-        requestTest();
+        navigator('/stores')
     }, [])
 
     return (

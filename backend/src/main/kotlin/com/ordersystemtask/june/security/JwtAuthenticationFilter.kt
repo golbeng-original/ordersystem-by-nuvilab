@@ -21,7 +21,8 @@ class JwtAuthenticationFilter(
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
 
     private val skipPaths = listOf(
-        "/auth/authorize"
+        "/auth/authorize",
+        "/auth/login"
     )
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {

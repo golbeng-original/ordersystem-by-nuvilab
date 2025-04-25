@@ -34,7 +34,8 @@ class SecurityConfiguration(
             corsConfig.run {
                 allowCredentials = true
                 allowedOriginPatterns = listOf(
-                    CorsConfiguration.ALL
+                    "http://localhost:8080",
+                    "http://127.0.0.1:8080"
                 )
                 allowedHeaders = listOf(
                     CorsConfiguration.ALL
@@ -80,7 +81,7 @@ class SecurityConfiguration(
 
             authorizeHttpRequests {
                 it.requestMatchers(
-                    "/auth/authorize"
+                    "/auth/**"
                 ).permitAll()
 
                 it.anyRequest().authenticated()

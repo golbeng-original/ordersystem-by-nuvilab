@@ -21,7 +21,18 @@ export const useHttpClient = () => {
         throw new Error('useHttpClient must be used within a HttpClientProvider');
     }
 
-    const { token, updateToken } = useStoreAuth()
+    const { token, updateToken, clearToken } = useStoreAuth();
+
+    useEffect(() => {
+        httpClient.registerNewTokenResolver((newToken: string) => {
+            updateToken(newToken);
+        });
+
+        httpClient.registerClearTokenResolver(() => {
+            clearToken();
+        });
+
+    }, [updateToken, clearToken])
 
     useEffect(() => {
         if( token ) {
@@ -34,9 +45,7 @@ export const useHttpClient = () => {
         updateToken(token);
     }
 
-    httpClient.registerNewTokenResolver((newToken: string) => {
-        updateToken(newToken);
-    });
+
 
     return { httpClient, updateTokenForHttpClient };
 }
