@@ -24,7 +24,7 @@ default:
     parameters:
       warm_containers: EAGER
 
-server:
+vpc:
   deploy:
     parameters:
       capabilities: CAPABILITY_NAMED_IAM
@@ -32,10 +32,11 @@ server:
       resolve_s3: true
       profile: default
       region: ap-northeast-2
-      stack_name: ordersystem-backend-stack
-      s3_prefix: ordersystem-backend-stack
+      stack_name: ordersystem-vpc-stack
+      s3_prefix: ordersystem-vpc-stack
       tags:
         - group=ordersystem
+
 ecr:
   deploy:
     parameters:
@@ -48,3 +49,19 @@ ecr:
       s3_prefix: ordersystem-ecr-stack
       tags:
         - group=ordersystem
+
+application:
+  deploy:
+    parameters:
+      capabilities: CAPABILITY_NAMED_IAM
+      confirm_changeset: true
+      resolve_s3: true
+      profile: default
+      region: ap-northeast-2
+      stack_name: ordersystem-application-stack
+      s3_prefix: ordersystem-application-stack
+      tags:
+        - group=ordersystem
+
+      parameter_overrides:
+        - VPCStackName=ordersystem-vpc-stack

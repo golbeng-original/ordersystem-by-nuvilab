@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  [NuviLab]OrderSystem Application Stack
+
+Parameters:
+  VPCStackName:
+    Type: String
+    Description: Name of the VPC stack
+
+Resources:
+
+  ########################
+  ## SecretsManager 배포 ##
+  ########################
+
+  ApplicationSecrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: "/prod/ordersystem/google-credentials"
+      Description: "Google OAuth Client Credentials"
+      SecretString: !Sub |
+        {
+          "GOOGLE_OAUTH_CLIENT_ID": "",
+          "GOOGLE_OAUTH_CLIENT_SECRET": ""
+        }
+
+  #############
+  ## EC2 배포 ##
+  #############
+
+  EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: ordersystem-backend-eip
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'ordersystem-application-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: "Application-Ec2-Policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: SecretsManagerPolicy
+                Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                  - 'secretsmanager:DescribeSecret'
+                Resource:
+                  !Ref ApplicationSecrets
+              - Sid: S3GetPolicy
+                Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource: !Sub "${CodeDeploymentS3Bucket.Arn}/*"
+              - Sid: CodeDeployAccessPolicy
+                Effect: Allow
+                Action:
+                  - 'codedeploy:*'
+                Resource: '*'
+              - Sid: EcrAccessPolicy
+                Effect: Allow
+                Action:
+                  - 'ecr:*'
+                Resource: '*'
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: 'ordersystem-application-role'
+      Path: /
+      Roles:
+        - !Ref EC2InstanceRole
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: 't3.small'
+      ImageId: ami-0eb302fcc77c2f8bd # Amazon Linux 2 AMI
+      KeyName: ordersystem-keypair
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: '0'
+          SubnetId: !ImportValue
+            Fn::Sub: '${VPCStackName}:PublicSubnetId'
+          GroupSet:
+            - !Ref InstanceSecurityGroup
+          DeleteOnTermination: true
+
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y ruby wget
+          
+          wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
+          chmod +x ./install
+          ./install auto
+          
+          systemctl enable codedeploy-agent
+          systemctl start codedeploy-agent
+          
+          amazon-linux-extras enable docker
+          yum install -y docker
+          systemctl start docker
+          systemctl enable docker
+          usermod -aG docker ec2-user
+          
+          curl -SL https://github.com/docker/compose/releases/download/v2.35.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          chown -R ec2-user:ec2-user /home/ec2-user/.docker
+          
+          SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id /prod/ordersystem/google-credentials --query SecretString --output text)
+          echo "export GOOGLE_OAUTH_CLIENT_ID=$(echo $SECRET_JSON | jq -r .GOOGLE_OAUTH_CLIENT_ID)" >> /etc/profile.d/ordersystem-env.sh
+          echo "export GOOGLE_OAUTH_CLIENT_SECRET=$(echo $SECRET_JSON | jq -r .GOOGLE_OAUTH_CLIENT_SECRET)" >> /etc/profile.d/ordersystem-env.sh
+          
+          chmod +x /etc/profile.d/ordersystem-env-sh
+
+      Tags:
+        - Key: Name
+          Value: ordersystem-backend-ec2
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Allow SSH and HTTP'
+      VpcId: !ImportValue
+        Fn::Sub: '${VPCStackName}:VPCId'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          fromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          fromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt EIP.AllocationId
+      InstanceId: !Ref EC2Instance
+
+  ################
+  ## CodeDeploy ##
+  ################
+  CodeDeploymentS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ordersystem-backend-codedeploy-bucket
+
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: 'ordersystem-backend-codedeploy'
+      ComputePlatform: 'Server'
+
+  CodeDeployEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codedeploy.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy
+        - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref CodeDeployApplication
+      DeploymentGroupName: "OrderSystemDeploymentGroup"
+      ServiceRoleArn: !GetAtt CodeDeployEC2Role.Arn
+      DeploymentConfigName: CodeDeployDefault.OneAtATime  # 배포 방식 (하나씩 순차)
+      Ec2TagFilters:
+        - Key: Name
+          Value: ordersystem-backend-ec2
+          Type: KEY_AND_VALUE
+      AutoRollbackConfiguration:
+        Enabled: true
+        Events:
+          - DEPLOYMENT_FAILURE
+      DeploymentStyle:
+        DeploymentType: IN_PLACE           # 기존 인스턴스에서 직접 배포 (blue/green 도 가능)
+        DeploymentOption: WITHOUT_TRAFFIC_CONTROL
+
+Outputs:
+  EC2InstancePublicIP:
+    Description: Public IP of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+
+  CodeDeploymentS3Bucket:
+    Description: S3 bucket for CodeDeploy
+    Value: !Ref CodeDeploymentS3Bucket
+
+  CodeDeployApplication:
+    Description: CodeDeploy Application Name
+    Value: !Ref CodeDeployApplication

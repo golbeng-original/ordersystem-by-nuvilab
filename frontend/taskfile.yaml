@@ -1,25 +1,29 @@
 version: '3'
 
 vars:
-  SAM_ROOT_PATH:
-    sh: echo "$(pwd)/sam"
+  ROOT_PATH:
+    sh: echo "$(pwd)"
 
 tasks:
   deploy-aws:
     desc: Deploy AWS FrontEnd Infra
     cmds:
       - echo "🚀 Deploying AWS FrontEnd Infra"
-      - echo {{.SAM_ROOT_PATH}}
-      - sam build --config-file {{.SAM_ROOT_PATH}}/samconfig.yaml --template-file {{.SAM_ROOT_PATH}}/template.yaml --config-env frontend
-      - sam deploy --config-file {{.SAM_ROOT_PATH}}/samconfig.yaml --config-env frontend
+      - sam build --config-file {{.ROOT_PATH}}/sam/samconfig.yaml --template-file {{.ROOT_PATH}}/sam/template.yaml --config-env frontend
+      - sam deploy --config-file {{.ROOT_PATH}}/sam/samconfig.yaml --config-env frontend
 
-  deploy-frontend:
-    desc: Deploy Frontend
+  deploy-application:
+    desc: Deploy Application
     cmds:
-      - echo "🚀 Deploying Frontend"
-      - rm -rf node_modules
-      - rm -rf dist
-      - npm install
+      - echo "🚀 Deploying Application"
+      #- rm -rf node_modules
+      #- rm -rf dist
+      #- npm install
 
-    #vars:
-    #  DEPLOY_S3_ENDPOINT: 's3://pomerium-space-platform.develop.frontend'
+      - npm run build
+      
+      - cmd: |
+          aws s3 cp {{.ROOT_PATH}}/dist s3://ordersystem-nuvilab.frontend/ --recursive \
+          --region ap-northeast-2
+
+      - echo "🚀 Application deployed to S3"

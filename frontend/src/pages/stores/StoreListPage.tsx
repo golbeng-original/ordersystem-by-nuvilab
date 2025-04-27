@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardActionArea, CardContent, Container, Grid, Typography } from "@mui/material";
+import { Box, Button, Card, CardActionArea, CardContent, Grid, Typography } from "@mui/material";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import { useNavigate } from "react-router-dom";
 import useGetStores from "../../features/stores/hooks/useGetStores";
@@ -56,8 +56,12 @@ const StoreListPage = () => {
         navigate("/user/orders")
     }
 
+    const onHandleGoAddress = () => {
+        navigate("/user/addresses")
+    }
+
     return (
-        <Container sx={{
+        <Box sx={{
             background: 'linear-gradient(to right, #667eea, #764ba2)',
             width: '100vw',
             height: '100vh',
@@ -74,7 +78,10 @@ const StoreListPage = () => {
                   <StoreItem key={store.id} store={store}/>
                 ))}
             </Grid>
-            <Box>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'row',
+            }}>
                 <Button
                     variant="contained" 
                     color="primary" 
@@ -83,8 +90,17 @@ const StoreListPage = () => {
                 >
                     내 주문 목록
                 </Button>
+                <Box sx={{ ml: 2 }} />
+                <Button
+                    variant="contained" 
+                    color="primary" 
+                    sx={{ mt: 3 }}
+                    onClick={onHandleGoAddress}
+                >
+                    주소지 추가하기
+                </Button>
             </Box>
-      </Container>
+      </Box>
     );
 }
 

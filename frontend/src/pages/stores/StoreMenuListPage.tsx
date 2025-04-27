@@ -92,11 +92,28 @@ const StoreMenuListBody = (prpos:{
     const [selectedAddressId, setSelectedAddressId] = useState('');
 
     useEffect(() => {
-        if( addresses.length > 0) {
-            setSelectedAddressId(addresses[0].id);
-            onUpdateAddress(selectedAddressId)
+        if( addresses.length === 0 ) {
+            console.log('aasdfsd')
+            return;
         }
-    },[addresses, selectedAddressId]);
+
+        if( selectedAddressId.length > 0 ) {
+            return;
+        }
+
+        setSelectedAddressId(addresses[0].id);
+        onUpdateAddress(addresses[0].id);
+
+    }, [addresses, selectedAddressId])
+
+    const onHandleAddressChange = (addressId:string) => {
+        if( addressId.length === 0 ) {
+            return;
+        }
+
+        setSelectedAddressId(addressId);
+        onUpdateAddress(selectedAddressId);
+    }
 
     if( !selectedStore ) {
         return (
@@ -126,7 +143,7 @@ const StoreMenuListBody = (prpos:{
                 </Typography>
                 <RadioGroup
                     value={selectedAddressId} 
-                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    onChange={(e) => onHandleAddressChange(e.target.value)}
                 >
                     {addresses.map((address) => (
                         <FormControlLabel
@@ -168,6 +185,8 @@ const StoreMenuListPage = () => {
     }, [orderId])
 
     const onUpdateAddress = (addressId:string) => {
+        console.log(`onUpdateAddress = ${addressId}`);
+
         setOrderForm((prev) => ({
             ...prev,
             addressId: addressId
@@ -201,6 +220,8 @@ const StoreMenuListPage = () => {
     }
 
     const onHandlePayment = async () => {
+
+        console.log(`orderForm.addressId = ${orderForm.addressId}`);
 
         const useRequestOrder:OrderPayload = {
             storeId: orderForm.storeId,

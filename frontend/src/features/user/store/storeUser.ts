@@ -21,11 +21,12 @@ type UserState = {
 type UserActions = {
     updateUser: (user: UserEntity) => void;
     updateUserAddresses: (userAddresses: UserAddressEntity[]) => void;
+    addNewAddresses: (userAddress: UserAddressEntity) => void;
 }
 
 const useStoreUser = create(
     persist<UserState & UserActions>(
-        (set) => ({
+        (set, get) => ({
             user: null,
             addresses: [],  
             //
@@ -39,6 +40,14 @@ const useStoreUser = create(
             updateUserAddresses: (addresses: UserAddressEntity[]) => {
                 set({
                     addresses: [...addresses]
+                })
+            },
+            addNewAddresses: (address: UserAddressEntity) => {
+                set({
+                    addresses: [
+                        ...get().addresses,
+                        address
+                    ]
                 })
             }
         }),

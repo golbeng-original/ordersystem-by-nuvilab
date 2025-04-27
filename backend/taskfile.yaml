@@ -1,12 +1,57 @@
 version: '3'
 
+vars:
+  ROOT_PATH:
+    sh: echo "$(pwd)"
+
+  ECR_REPOSITORY_URI: '969026361001.dkr.ecr.ap-northeast-2.amazonaws.com'
+  IMAGE_NAME: 'ordersystem-backend'
 
 tasks:
+  aws-deploy-ecr:
+    desc: Deploy to AWS ECR
+    cmds:
+      - cmd: | 
+          sam build --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --template-file {{.ROOT_PATH}}/sam/template-ecr.yaml \
+          --config-env ecr
+      - cmd: |
+          sam deploy --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --config-env ecr
+
+  aws-deploy-vpc:
+    desc: Deploy to AWS VPC
+    cmds:
+      - cmd: |
+          sam build --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --template-file {{.ROOT_PATH}}/sam/template-vpc.yaml \
+          --config-env vpc
+      - cmd: |
+          sam deploy --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --config-env vpc
+
+  aws-deploy-application:
+    desc: Deploy to AWS Application
+    cmds:
+      - cmd: |
+          sam build --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --template-file {{.ROOT_PATH}}/sam/template-application.yaml \
+          --config-env application
+      - cmd: |
+          sam deploy --config-file {{.ROOT_PATH}}/sam/samconfig.yaml \
+          --config-env application
+      
+
   docker-build:
     desc: Build Docker image
     cmds:
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin {{.ECR_REPOSITORY_URI}}/{{.IMAGE_NAME}}
       - docker build -t ordersystem-app:latest .
-
+      - cmd: |
+          docker build \
+          -t {{.ECR_REPOSITORY_URI}}/{{.IMAGE_NAME}}:latest \
+          --push .
+      #- docker push {{.ECR_REPOSITORY_URI}}/{{.IMAGE_NAME}}:latest
   docker-run:
     silent: true
     desc: Run the Docker container
@@ -16,7 +61,58 @@ tasks:
     cmds:
       - cmd: |
           docker run -d \
+          --name ordersystem-app \
           -p 80:80 \
           -e GOOGLE_OAUTH_CLIENT_ID={{.GOOGLE_CLIENT_ID}} \
           -e GOOGLE_OAUTH_CLIENT_SECRET={{.GOOGLE_CLIENT_SECRET}} \
           ordersystem-app
+
+  docker-compose-up:
+    desc: Start Docker containers using docker-compose
+    cmds:
+      - docker-compose up -d
+  docker-stop:
+    desc: Stop the Docker container
+    cmds:
+      - docker stop $(docker ps -q --filter ancestor=ordersystem-app)
+
+  deployment-aws:
+    desc: Deploy to AWS
+    vars:
+      CODEDEPLOY_OPERATION_S3_BUCKET: "ordersystem-backend-codedeploy-bucket"
+    cmds:
+      - echo "deploy to AWS"
+      - cmd: |
+          cd {{.ROOT_PATH}}/.deployment/production
+          zip -r deployment.zip .
+          
+          aws s3 cp deployment.zip s3://{{.CODEDEPLOY_OPERATION_S3_BUCKET}}/deployment.zip --region ap-northeast-2
+          
+          rm -f deployment.zip
+      - cmd: |
+          DEPLOYMENT_ID=$(aws deploy create-deployment \
+          --region ap-northeast-2 \
+          --application-name ordersystem-backend-codedeploy \
+          --deployment-group-name OrderSystemDeploymentGroup \
+          --deployment-config-name CodeDeployDefault.OneAtATime \
+          --s3-location bucket={{.CODEDEPLOY_OPERATION_S3_BUCKET}},key=deployment.zip,bundleType=zip \
+          --query "deploymentId" \
+          --output text);
+          
+          printf "Deployment ID = $DEPLOYMENT_ID"
+          
+          if [ -z "$$DEPLOYMENT_ID" ]; then
+            printf "Failed to crate deployment"
+            exit 1
+          fi
+          
+          while true; do
+            STATUS=$(aws deploy get-deployment --region ap-northeast-2 --deployment-id $DEPLOYMENT_ID --query "deploymentInfo.status" --output text)
+            printf "\rDeployment status [%s]" "$STATUS"
+
+            if [ "$STATUS" == "Succeeded" ] || [ "$STATUS" == "Failed" ]; then
+              break
+            fi
+
+            sleep 2
+          done

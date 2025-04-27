@@ -14,7 +14,7 @@ interface GetAddressesResponsePayload {
 }
 
 
-const userGetAddresses = () => {
+const useGetAddresses = () => {
 
     const { httpClient } = useHttpClient();
     const { addresses, updateUserAddresses } = useStoreUser();
@@ -36,8 +36,6 @@ const userGetAddresses = () => {
             });
 
             updateUserAddresses(addressEntities);
-
-
         };
 
         requestGetAddress();
@@ -48,4 +46,4 @@ const userGetAddresses = () => {
 
 }
 
-export default userGetAddresses;
+export default useGetAddresses;

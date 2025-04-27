@@ -69,3 +69,6 @@ metadata/
 
 # Optional: Ignore dependency lock files if not needed
 # gradle.lockfile
+
+# SAM
+.aws-sam/

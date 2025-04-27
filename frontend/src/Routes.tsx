@@ -7,6 +7,7 @@ import StoreListPage from "./pages/stores/StoreListPage"
 import StoreMenuListPage from "./pages/stores/StoreMenuListPage"
 import OrderCompletePage from "./pages/stores/OrderCompletePage"
 import MyOrdreListPage from "./pages/user/MyOrderListPage"
+import MyAddressListPage from "./pages/user/MyAddressListPage"
 
 
 const AppRoutes = () => {
@@ -21,6 +22,7 @@ const AppRoutes = () => {
                 <Route path="/stores/:storeId" element={<StoreMenuListPage />} />
                 <Route path="/order/:orderId" element={<OrderCompletePage />} />
                 <Route path="/user/orders" element={<MyOrdreListPage />} />
+                <Route path="/user/addresses" element={<MyAddressListPage />} />
                 <Route path="*" element={<HomePage />} />
             </Routes>
         </>
