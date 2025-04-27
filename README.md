@@ -18,6 +18,12 @@ FrontEnd
 - 가게에서 메뉴들 노출 및 주문
 - 주문 후 주문 내역 확인
 
-배포 된 시연 페이지
+CD
+- CodeDeploy 적용
+- Dockerfile 적용
+- taskfile.yaml을 이용한 배포 명령어 모음 작업
+- aws 배포를 위한 Aws Sam 적용 및 배포 수행
+
+### 배포 시연 페이지
 
 http://ordersystem-nuvilab.frontend.s3-website.ap-northeast-2.amazonaws.com/
