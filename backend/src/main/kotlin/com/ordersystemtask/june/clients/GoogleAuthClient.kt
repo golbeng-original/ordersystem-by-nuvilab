@@ -69,7 +69,7 @@ class GoogleAuthClient(
 ) {
 
     companion object {
-        const val REDIRECT_URI = "http://localhost:8080/auth/callback"
+        const val REDIRECT_URI = "http://ordersystem-nuvilab.frontend.s3-website.ap-northeast-2.amazonaws.com/auth/callback"
         const val SCOPE = "email profile openid"
     }
 

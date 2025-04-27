@@ -4,9 +4,7 @@ DOCKER_REPOSITORY_URI="969026361001.dkr.ecr.ap-northeast-2.amazonaws.com"
 IMAGE_NAME="ordersystem-backend"
 
 # docker stop
-if [ "$(docker ps -a -q -f name=${IMAGE_NAME})" ]; then
-  docker-compose down
-fi
+docker-compose -f /home/ec2-user/deployment/docker-compose.yaml down
 
 # docker image rm
 IMAGE_ID=$(docker image ls -q -f reference="${DOCKER_REPOSITORY_URI}/${IMAGE_NAME}:latest")

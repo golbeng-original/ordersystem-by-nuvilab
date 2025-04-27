@@ -34,8 +34,10 @@ class SecurityConfiguration(
             corsConfig.run {
                 allowCredentials = true
                 allowedOriginPatterns = listOf(
-                    "http://localhost:8080",
-                    "http://127.0.0.1:8080"
+                    CorsConfiguration.ALL
+                    //"http://localhost:8080",
+                    //"http://127.0.0.1:8080",
+                    //"http://ordersystem-nuvilab.frontend.s3-website.ap-northeast-2.amazonaws.com"
                 )
                 allowedHeaders = listOf(
                     CorsConfiguration.ALL

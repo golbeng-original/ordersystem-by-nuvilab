@@ -46,7 +46,7 @@ tasks:
     desc: Build Docker image
     cmds:
       - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin {{.ECR_REPOSITORY_URI}}/{{.IMAGE_NAME}}
-      - docker build -t ordersystem-app:latest .
+      #- docker build -t ordersystem-app:latest .
       - cmd: |
           docker build \
           -t {{.ECR_REPOSITORY_URI}}/{{.IMAGE_NAME}}:latest \

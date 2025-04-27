@@ -112,7 +112,7 @@ const StoreMenuListBody = (prpos:{
         }
 
         setSelectedAddressId(addressId);
-        onUpdateAddress(selectedAddressId);
+        onUpdateAddress(addressId);
     }
 
     if( !selectedStore ) {
@@ -185,7 +185,6 @@ const StoreMenuListPage = () => {
     }, [orderId])
 
     const onUpdateAddress = (addressId:string) => {
-        console.log(`onUpdateAddress = ${addressId}`);
 
         setOrderForm((prev) => ({
             ...prev,
@@ -220,8 +219,6 @@ const StoreMenuListPage = () => {
     }
 
     const onHandlePayment = async () => {
-
-        console.log(`orderForm.addressId = ${orderForm.addressId}`);
 
         const useRequestOrder:OrderPayload = {
             storeId: orderForm.storeId,

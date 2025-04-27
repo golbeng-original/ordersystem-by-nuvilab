@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHttpClient } from "../../../shared/http/httpClientContext";
 
 type AuthorizeResponsePayload = {
@@ -9,6 +9,8 @@ type AuthorizeResponsePayload = {
 }
 
 const AuthorizeCallbackWidget = () => {
+
+    const navigate = useNavigate();
 
     const [searchParams] = useSearchParams();
     const { httpClient, updateTokenForHttpClient } = useHttpClient();
@@ -28,7 +30,7 @@ const AuthorizeCallbackWidget = () => {
 
         updateTokenForHttpClient(payload.jwtToken);
 
-        window.location.href = 'http://localhost:8080/auth/authticated';
+        navigate('auth/authticated');
 
     }, []);
     
